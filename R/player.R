@@ -1,6 +1,7 @@
 # Build an HTML <audio> player with the sound embedded, so it plays anywhere a
 # browser does: the RStudio/Positron viewer, Quarto and R Markdown documents.
 # Uses mp3 when the av package is available (much smaller), otherwise WAV.
+# 96 kbps keeps embeds small (about 0.7 MB a minute) and sounds fine for this.
 player_tag <- function(x) {
   audio <- get_audio(x)
   wav <- tempfile(fileext = ".wav")
@@ -12,7 +13,7 @@ player_tag <- function(x) {
     mp3 <- tempfile(fileext = ".mp3")
     on.exit(unlink(mp3), add = TRUE)
     ok <- tryCatch({
-      av::av_audio_convert(wav, mp3, verbose = FALSE)
+      av::av_audio_convert(wav, mp3, bit_rate = 96000, verbose = FALSE)
       TRUE
     }, error = function(e) FALSE)
     if (ok) {
@@ -85,7 +86,7 @@ save_sound <- function(x, path) {
     wav <- tempfile(fileext = ".wav")
     on.exit(unlink(wav))
     write_wav(get_audio(x), wav)
-    av::av_audio_convert(wav, path, verbose = FALSE)
+    av::av_audio_convert(wav, path, bit_rate = 192000, verbose = FALSE)
   } else if (ext == "mid") {
     inst <- x$settings$instrument
     write_midi(x$notes, path, program = if (inst$type == "gm") inst$program else 0L)

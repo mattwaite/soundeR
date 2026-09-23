@@ -1,0 +1,236 @@
+---
+title: "Your first sonification"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Your first sonification}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+A chart turns numbers into shapes you can see. A **sonification** turns
+numbers into sounds you can hear. Higher numbers can become higher notes,
+the gap between two events can become the silence between two notes, and a
+whole season of games can become a short tune.
+
+soundeR does this with one function, `sonify_data()`. It works like the
+rest of the tidyverse: give it a data frame, tell it which columns to
+listen to, and print the result. In RStudio or Positron an audio player
+appears in the Viewer pane. In a Quarto or R Markdown document, like this
+one, the player appears on the page.
+
+```{r setup, message = FALSE}
+library(soundeR)
+library(dplyr)
+```
+
+## Real instruments (one-time setup)
+
+soundeR can play 128 real instruments, from piano to xylophone to cello.
+They need a one-time download of instrument sounds, about 30 MB:
+
+```{r, eval = FALSE}
+sound_setup()
+```
+
+If you skip this, everything still works. soundeR uses its own built-in
+sounds instead and tells you when it does.
+
+## Fractions of a second
+
+In 2010, during the Vancouver Winter Olympics, The New York Times published
+"Fractions of a Second: An Olympic Musical." For each event, it played one
+note for every athlete at the moment they crossed the finish line, spaced
+by how far they finished behind the winner. You could *hear* how close the
+races were.
+
+We can rebuild that with `luge_finals`, the results of every luge event at
+the 2026 Winter Olympics in Milan and Cortina d'Ampezzo:
+
+```{r}
+luge_finals |>
+  select(event, rank, athlete, country, total_time, behind)
+```
+
+`behind` is how many seconds each sled finished behind the winner of its
+event. Let's listen to the men's singles final:
+
+```{r}
+mens_singles <- luge_finals |>
+  filter(event == "Men's singles")
+
+mens_singles |>
+  sonify_data(time = behind, time_scale = 1, instrument = "piano")
+```
+
+There's no pitch here. Every note is the same. Only two things matter:
+
+* `time = behind` decides **when** each note plays. The winner, 0 seconds
+  behind, plays first.
+* `time_scale = 1` plays it in **real time**: one second of data is one
+  second of sound.
+
+Max Langenhan won by 0.596 seconds, and you can hear the gap before the
+second note. Now try the men's doubles, where gold and silver were
+separated by 0.068 seconds. In real time those first notes nearly blur
+together, so slow it down four times with `time_scale = 4`:
+
+```{r}
+luge_finals |>
+  filter(event == "Men's doubles") |>
+  sonify_data(time = behind, time_scale = 4, instrument = "piano")
+```
+
+To hear every event, one after another like the original, use
+`sequence`. It plays each group in turn, with a second of silence between
+them:
+
+```{r}
+luge_finals |>
+  sonify_data(time = behind, time_scale = 1, sequence = event, instrument = "piano")
+```
+
+### Working it out yourself
+
+`luge_finals` already has a `behind` column, but real data usually won't.
+You can compute it with `group_by()` and `mutate()`:
+
+```{r}
+luge_finals |>
+  group_by(event) |>
+  mutate(seconds_behind = total_time - min(total_time)) |>
+  sonify_data(time = seconds_behind, time_scale = 1, sequence = event, instrument = "piano")
+```
+
+Grouping your data doesn't change the sound by itself. `sequence = event`
+is what plays the events one at a time. If you pass grouped data without
+`sequence`, soundeR reminds you of that.
+
+## What did the data become?
+
+Every row became a note. `notes()` shows you exactly which one, the same way
+you'd look at the data behind a chart:
+
+```{r}
+race <- mens_singles |>
+  sonify_data(time = behind, time_scale = 1, instrument = "piano")
+
+notes(race)
+```
+
+`row` matches the row of your data, `onset` is the second the note starts,
+`note` is its name (C5 is the C an octave above middle C), and `value` is
+the number it came from.
+
+## A season you can hear
+
+`husker_games` holds every game of Nebraska men's basketball's 2025-26
+season, the best in program history: 28 wins, a 20-0 start, and the
+program's first NCAA tournament wins.
+
+```{r}
+husker_games |>
+  select(game_number, date, opponent, husker_score, opponent_score, point_margin)
+```
+
+This time, let's map `point_margin` to **pitch**. Bigger wins are higher
+notes, and losses are the lowest:
+
+```{r}
+husker_games |>
+  sonify_data(point_margin, instrument = "xylophone", bpm = 180)
+```
+
+Each game is one note, played in order, 180 notes per minute. Listen for
+the long run of high notes during the 20-0 start, then the first low note:
+a three-point loss at Michigan in late January.
+
+The pitches snap to a **pentatonic scale**, the five-note scale you get
+from only the black keys of a piano. Any data sounds reasonably musical
+on it. The real numbers are still there in `notes()`.
+
+### Your choices change what people hear
+
+Just like the axes and colors of a chart, the choices you make shape what a
+listener takes away.
+
+Turn `scale` off and pitches follow the numbers exactly. It's more
+precise, but harder to listen to:
+
+```{r}
+husker_games |>
+  sonify_data(point_margin, instrument = "xylophone", bpm = 180, scale = "none")
+```
+
+Narrow the `range` of notes and a dominant season sounds a lot more
+ordinary:
+
+```{r}
+husker_games |>
+  sonify_data(point_margin, instrument = "xylophone", bpm = 180, range = c("C4", "G4"))
+```
+
+You can map loudness, too. Here the postseason gets louder: `game_type` has
+three levels (regular season, Big Ten tournament and NCAA tournament), and
+each level is louder than the one before:
+
+```{r}
+husker_games |>
+  sonify_data(point_margin, volume = game_type, instrument = "xylophone", bpm = 180)
+```
+
+And instead of one note per row, `time = date` places each game on the
+calendar. `length = 20` fits the whole season into 20 seconds. Listen for
+the gaps: the break around Christmas, and the waits between tournament
+rounds.
+
+```{r}
+husker_games |>
+  sonify_data(point_margin, time = date, length = 20, instrument = "marimba")
+```
+
+## Picking an instrument
+
+`instruments()` lists everything you can use:
+
+```{r}
+instruments()
+```
+
+The first five are soundeR's built-in sounds, which work everywhere. The
+rest are real instruments. You can also filter by family:
+
+```{r}
+instruments("chromatic percussion")
+```
+
+## Saving your sound
+
+`save_sound()` saves a sonification as a file. The ending of the file name
+picks the format:
+
+```{r, eval = FALSE}
+season <- husker_games |>
+  sonify_data(point_margin, instrument = "xylophone", bpm = 180)
+
+save_sound(season, "husker-season.mp3") # to share
+save_sound(season, "husker-season.wav") # uncompressed audio
+save_sound(season, "husker-season.mid") # to open in GarageBand or MuseScore
+```
+
+## Things to try
+
+* Which luge podium was closer, men's singles or women's singles? Listen
+  first, then check with `filter()` and `arrange()`.
+* In the luge, map `pitch = rank` and add `reverse = TRUE` so the winner
+  plays the highest note. Does that make it easier to follow?
+* Play the Husker season sorted by `point_margin` with `arrange()`. What
+  does the sound tell you now that it didn't before, and what did you lose?
+* Pick a column from your own data. What should be high, what should be
+  loud, and what should decide when a note plays?
