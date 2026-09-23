@@ -131,7 +131,8 @@ sonify_data <- function(data, pitch = NULL, time = NULL, volume = NULL,
     freq = freq,
     velocity = velocity,
     instrument = inst$name,
-    value = value
+    value = value,
+    time_value = if (is.null(time_vals)) NA else time_vals
   )
 
   report_missing(notes, pitch_vals, time_vals, volume_vals)
@@ -146,10 +147,16 @@ sonify_data <- function(data, pitch = NULL, time = NULL, volume = NULL,
     settings = list(
       instrument = inst, engine = engine, bpm = bpm, length = length,
       time_scale = time_scale, gap = gap, scale = scale, key = key,
-      range = range, reverse = reverse, total = total
+      range = range, reverse = reverse, total = total,
+      labels = list(
+        pitch = mapping_label(q_pitch), time = mapping_label(q_time),
+        volume = mapping_label(q_volume), sequence = mapping_label(q_sequence)
+      )
     )
   )
 }
+
+mapping_label <- function(q) if (rlang::quo_is_null(q)) NULL else rlang::as_label(q)
 
 # Evaluate one mapping against the data; NULL if the mapping was left out.
 eval_mapping <- function(q, data, arg, call = rlang::caller_env()) {
@@ -205,8 +212,9 @@ new_sonification <- function(notes, settings) {
 #' Every row of your data becomes a note. `notes()` shows the result as a
 #' tibble: when each note starts (`onset`, in seconds), how long it lasts, its
 #' pitch (as a MIDI number, a note name and a frequency in hertz), how loud it
-#' is (`velocity`, 1 to 127), and the data `value` it came from. The `row`
-#' column matches the row number in your original data.
+#' is (`velocity`, 1 to 127), and the data `value` it came from. If you mapped
+#' `time`, `time_value` holds the original time. The `row` column matches the
+#' row number in your original data.
 #'
 #' @param x A sonification made by [sonify_data()].
 #' @return A tibble with one row per note.

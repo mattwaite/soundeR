@@ -16,8 +16,9 @@ A tibble with one row per note.
 Every row of your data becomes a note. \code{notes()} shows the result as a
 tibble: when each note starts (\code{onset}, in seconds), how long it lasts, its
 pitch (as a MIDI number, a note name and a frequency in hertz), how loud it
-is (\code{velocity}, 1 to 127), and the data \code{value} it came from. The \code{row}
-column matches the row number in your original data.
+is (\code{velocity}, 1 to 127), and the data \code{value} it came from. If you mapped
+\code{time}, \code{time_value} holds the original time. The \code{row} column matches the
+row number in your original data.
 }
 \examples{
 s <- sonify_data(data.frame(x = c(1, 5, 3)), x, instrument = "sine")
