@@ -1,3 +1,7 @@
+
+
+https://github.com/user-attachments/assets/7cfc59a9-ab62-4300-aecd-be7b397e669b
+
 # soundeR
 
 Turn data into sound, the tidyverse way.
@@ -8,8 +12,7 @@ two events becomes the silence between two notes, and a whole season
 becomes a short tune. It's built for people learning data analysis in R.
 Give it a data frame, name a column, and print the result.
 
-<!-- Drag spike/out/luge_readme.mp4 into GitHub's web editor on the line below; it becomes a playable video. -->
-VIDEO_GOES_HERE
+https://github.com/user-attachments/assets/86463910-ca5c-434f-9392-19e14614f2d7
 
 *The luge finals at the 2026 Winter Olympics, one note per sled at the
 moment it crossed the line, after the New York Times's 2010 "Fractions of
