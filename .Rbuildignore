@@ -5,3 +5,4 @@
 ^\.claude$
 ^soundeR\.Rproj$
 ^\.Rproj\.user$
+^data-raw$

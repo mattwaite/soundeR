@@ -56,7 +56,7 @@ husker_games |>
 
 ```r
 husker_games |>
-  pivot_longer(c(home_score, away_score), names_to = "side", values_to = "score") |>
+  pivot_longer(c(husker_score, opponent_score), names_to = "side", values_to = "score") |>
   sonify_data(pitch = score, voice = side, instrument = c("xylophone", "cello"), bpm = 120)
 ```
 
@@ -98,10 +98,14 @@ ne_houses |>
 This is the project's north star. If a student can rebuild the 2010 NYT piece in three lines, the package works.
 
 ```r
-olympic_finishes |>
-  group_by(event) |>
-  mutate(behind = time - min(time)) |>
+luge_finals |>
   sonify_data(time = behind, instrument = "piano", time_scale = 1, sequence = event)
+
+# or computing the gap yourself from total times, as students would with raw data:
+luge_finals |>
+  group_by(event) |>
+  mutate(seconds_behind = total_time - min(total_time)) |>
+  sonify_data(time = seconds_behind, instrument = "piano", time_scale = 1, sequence = event)
 ```
 
 - **No `pitch` mapping.** Every note is the same pitch, or pitch is optional (`pitch = place` if wanted). So `pitch` **must be optional**, with a sensible default single note.
@@ -109,7 +113,7 @@ olympic_finishes |>
 - **`sequence = event`** plays groups **one after another** with a pause between (`gap = 1` second). By contrast, `voice =` plays groups **at the same time**. Beginners need these two to be clearly different.
 - The **visual companion** matters: `autoplot()` for this should look like the NYT dot plot (one row per event, dots at seconds behind). Later, `sonify_video()` can animate a playhead across it.
 - Stretch: an accent or different note for the gold medalist (`accent = place == 1`).
-- Dataset idea: results from the 2026 Milan–Cortina Winter Olympics (or 2010 Vancouver, to directly recreate the original): speed skating, alpine, luge, bobsled, cross-country. Check sources and licensing.
+- **Dataset: `luge_finals`** (bundled). All five luge events at Milano Cortina 2026 (77 sleds). Men's doubles gold–silver was 0.068 s. Real time (`time_scale = 1`) runs 32.8 s; 4× slow motion runs 112 s.
 
 **Design implication:** a real piano sound is central to this example. The Tier 0 synth can't do a convincing piano, so the fluidsynth path (Phase 2) matters more than first assumed. Consider pulling it into Phase 1 if Phase 0 shows it installs cleanly.
 
@@ -310,8 +314,8 @@ Use `usethis::create_package()`, `usethis::use_testthat()`, `usethis::use_mit_li
 
 | Dataset | Source idea | Use |
 |---|---|---|
-| `olympic_finishes` | Finishing times from Winter Olympic timed events (2026 Milan–Cortina and/or 2010 Vancouver): event, athlete, country, place, time | §2.4, the NYT recreation, real-time mode |
-| `husker_games` | One Nebraska men's basketball season: date, opponent, home/away, points, opp points, result. Sources: `hoopR`, Sports-Reference, or hand-entered. | §2.1, sequences |
+| `luge_finals` ✅ | Milano Cortina 2026 luge, all five events, sleds that completed every run: event, rank, bib, athlete, country, run_1–4, total_time, behind. Scraped from Wikipedia (`data-raw/luge_finals.R`). One Wikipedia total has transposed digits (Grancagnolo 3:33.942 → 3:33.492, matching his runs and the page's own "Behind"); the script uses the sum of runs and prints mismatches. | §2.4, the NYT recreation, real-time mode |
+| `husker_games` ✅ | Nebraska men's basketball 2025-26 (28-7, 20-0 start, first NCAA wins, Sweet 16): game_number, date (Central), opponent, location, game_type, conference_game, husker_score, opponent_score, point_margin, result. From `hoopR::load_mbb_schedule(2026)` (`data-raw/husker_games.R`); record checked against huskers.com. | §2.1, sequences |
 | `ws_pitches` | World Series Statcast pitches (`baseballr::statcast_search`): game_date, inning, pitch_type, release_speed, description. Consider trimming to one game for size. | §2.2, many rows, multi-voice |
 | `ne_housing_age` | ACS B25034 for Nebraska counties (`tidycensus`), already binned by decade built | §2.3, pre-binned histogram |
 
@@ -322,7 +326,7 @@ Check licensing/redistribution for each. Store build scripts in `data-raw/`.
 ## 9. Open decisions (resolve and record here)
 
 1. ~~**Function name `sonify()`.**~~ **DECIDED (2026-09-22): the main verb is `sonify_data()`.** This avoids masking CRAN's `sonify::sonify()`, is easier to search for, and gives a `sonify_` prefix family (`sonify_data()`, `sonify_histogram()`, `sonify_density()`) that shows up together with Tab completion, like stringr's `str_`.
-2. **Package name.** `soundeR`, `soundr`, and `sonifyr` were **all free on CRAN as of 2026-09-22** (checked). Tidyverse style prefers lowercase (`soundr`?). Also check GitHub/R-universe collisions.
+2. **Package name.** `soundeR`, `soundr`, and `sonifyr` were **all free on CRAN as of 2026-09-22** (checked). The GitHub repo is `mattwaite/soundeR` (private). Tidyverse style prefers lowercase (`soundr`?). Also check GitHub/R-universe collisions.
 3. **Pitch as first positional mapping?** Should `sonify_data(home_score)` work without `pitch =`? This is the user's original example. **Yes: make `pitch` the 2nd positional argument, but optional** (the NYT Olympic case maps only `time`).
 3a. **`group_by()` meaning. DECIDED (Phase 1): no effect on sound.** Students' pipelines are almost always still grouped after `group_by() |> mutate()`, so any automatic meaning would fire accidentally. `voice =` / `sequence =` must be explicit, and grouped input gets a `cli` hint. Easy to revisit later (e.g., make grouping imply `sequence`).
 4. **WAV writing:** hand-rolled `writeBin` (zero deps) vs `tuneR` (a known quantity). **Decided: hand-rolled.** It worked in the Phase 0 spike: 20 lines, and `tuneR::readWave` reads it back. tuneR goes in Suggests for tests.
@@ -358,9 +362,10 @@ Code lives in `R/`: `pitch.R`, `timing.R`, `instruments.R`, `sonify_data.R`, `wa
 - [x] Conflicting timing arguments are errors: `time_scale` without `time`, `time_scale` + `length`, `time_scale` + explicit `bpm`, `bpm` + `length`. `gap` without `sequence` warns.
 - [x] Friendly errors: mistyped columns ("Did you mean margin?"), unknown instruments (edit-distance suggestions), bad scale/key/range, wrong-length mappings. NA → silence with one message. Grouped data → a rate-limited hint.
 - [x] Tests: 137 passing (pitch, timing, sonify_data, audio/WAV/MIDI/fluidsynth, player). `R CMD check`: 0 errors / 0 warnings / 0 notes. The fluidsynth test skips when no soundfont is present. Verified end to end in the browser and in a Quarto doc (`spike/04_phase1.qmd`).
-- [ ] **Datasets:** examples and tests use clearly synthetic data. The real `olympic_finishes` and `husker_games` need a `data-raw/` script with a cited source. **Waiting on Matt:** which Olympics/events, and which Husker season (men's or women's).
+- [x] **Datasets:** `luge_finals` (Milano Cortina 2026, Matt's pick) and `husker_games` (men's 2025-26, Matt's pick), each with a `data-raw/` script, a cited source, and sanity checks. Documented in `R/data.R`, tested in `test-data.R`.
 - [ ] "Your first sonification" vignette (after datasets). Open with the Olympic recreation.
-- [ ] Matt to try in RStudio/Positron: `devtools::load_all()` then print a sonification. Confirm the viewer player and the fallback message.
+- [x] Matt confirmed in RStudio (2026-09-23): the viewer player works.
+- [ ] Embedded players get large for long pieces (112 s ≈ 5.9 MB). Pass a lower `bit_rate` (e.g., 64k) to `av_audio_convert()` for embeds.
 
 ### Phase 2 — Real instruments
 - [x] Mostly done early in Phase 1 (`write_midi()`, GM table, `instruments()`, fluidsynth engine, `save_sound()` mid/mp3, `sound_setup()`).
@@ -393,3 +398,4 @@ Add an entry per work session: date, what was done, decisions made, and what's n
 - **2026-09-22 (Phase 0, cont.)** — Matt approved the soundfont download. The fluidsynth piano and xylophone render correctly with accurate timing. Found that renders are quiet by default (gain 0.2) and have ~3 s of trailing silence; fixes are recorded in Phase 0 notes. Since fluidsynth installed painlessly on macOS, **recommend pulling the piano engine into Phase 1**, because the Olympic flagship needs it. The synth stays as the no-download fallback. **Next:** Matt checks the RStudio viewer by hand, then Phase 1.
 - **2026-09-22 (Phase 0, cont.)** — Matt's first run in RStudio failed ("cannot open file 'spike/out/season_bell.wav'") because the working directory wasn't the project root. Fixed spike 1 to locate the root from the script's own path, and it now opens the players in the viewer via `htmltools::html_print()` when interactive. Added `soundeR.Rproj`. **Lesson for the package:** never depend on the working directory. Render to `tempfile()`, and only write where the user explicitly says (`save_sound(path)`). Beginners will run code from anywhere.
 - **2026-09-22 (Phase 1)** — Built the MVP. Decisions: `group_by()` has no effect on sound (3a); fluidsynth pulled into Phase 1; hand-rolled WAV. Implemented pitch/scales, four timing modes plus sequence, note tibble, synth + fluidsynth engines with fallback, the mp3-embedded player, knit_print, save_sound, sound_setup, and instruments. 137 tests, clean `R CMD check`. Gotchas: the `length` argument name shadows `base::length`, which is fine for calls since R skips non-function bindings but is worth remembering; keep R code ASCII-only (use `\u00b7` escapes). **Late fix:** same-pitch notes overlapping on one MIDI channel cut each other off (a note-off silences the key). This affected the Olympic case most. `write_midi()` now assigns overlapping same-key notes to separate channels (skipping 9 = drums), with a program change per channel. Also, dense renders clipped inside fluidsynth at gain 0.6, so the renderer now re-renders at gain/3 until the peak is under 0.99. 146 tests. Nothing is committed yet. **Next:** Matt picks the real datasets; build `data-raw/` scripts; write the vignette; Matt tries it in RStudio.
+- **2026-09-23** — Matt confirmed the RStudio viewer works. Committed and pushed to the private repo **github.com/mattwaite/soundeR** (`spike/` and `.claude/` are gitignored). Built both real datasets: `luge_finals` (Milano Cortina 2026 luge finals, 5 events, 77 sleds; corrected one Wikipedia typo, see §8) and `husker_games` (Nebraska men's 2025-26, 35 games, 28-7). Gotcha: Wikipedia's `<br>` tags carry attributes (`<br id=...>`), so match `<br[^>]*>`. ESPN dates are UTC, so convert to America/Chicago before taking the date. **Next:** the "Your first sonification" vignette built on these two datasets; smaller mp3s for embeds; then Phase 3 (voices).
