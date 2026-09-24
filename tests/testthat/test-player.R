@@ -34,3 +34,10 @@ test_that("save_sound() rejects unknown formats and non-sonifications", {
   expect_error(save_sound(s, "noextension"), "can't save")
   expect_error(save_sound(mtcars, "a.wav"), "sonification")
 })
+
+test_that("on the pkgdown site, printed sonifications become players", {
+  out <- pkgdown_print.sonification(s)
+  expect_true(isTRUE(attr(out, "browsable_html")))
+  expect_match(as.character(out), "<audio")
+  expect_null(pkgdown_print.sonification(s, visible = FALSE))
+})

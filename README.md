@@ -8,8 +8,7 @@ two events becomes the silence between two notes, and a whole season
 becomes a short tune. It's built for people learning data analysis in R.
 Give it a data frame, name a column, and print the result.
 
-https://github.com/user-attachments/assets/86463910-ca5c-434f-9392-19e14614f2d7
-
+<video src="https://github.com/user-attachments/assets/86463910-ca5c-434f-9392-19e14614f2d7" controls width="100%"></video>
 *The luge finals at the 2026 Winter Olympics, one note per sled at the
 moment it crossed the line, after the New York Times's 2010 "Fractions of
 a Second: An Olympic Musical."*
@@ -48,8 +47,7 @@ husker_games |>
   sonify_data(point_margin, instrument = "xylophone", bpm = 180)
 ```
 
-https://github.com/user-attachments/assets/493f037d-24fc-4559-8428-435797e26fe8
-
+<video src="https://github.com/user-attachments/assets/493f037d-24fc-4559-8428-435797e26fe8" controls width="100%"></video>
 In RStudio or Positron, printing a sonification opens an audio player in
 the Viewer pane. In Quarto and R Markdown documents, the player appears
 on the page. `notes()` shows the note each row became, and

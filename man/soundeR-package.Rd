@@ -8,6 +8,15 @@
 \description{
 A beginner-friendly, tidyverse-style interface for data sonification: map columns to pitch, time and loudness and hear the result.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://mattwaite.github.io/soundeR/}
+  \item \url{https://github.com/mattwaite/soundeR}
+  \item Report bugs at \url{https://github.com/mattwaite/soundeR/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Matt Waite \email{matt.waite@gmail.com}
 

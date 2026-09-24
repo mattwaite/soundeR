@@ -1,0 +1,42 @@
+url: https://mattwaite.github.io/soundeR/
+
+template:
+  bootstrap: 5
+  bslib:
+    primary: "#1f2d3d"
+
+navbar:
+  structure:
+    left: [intro, reference, articles]
+    right: [search, github]
+
+reference:
+- title: Make sound from data
+  desc: >
+    Turn a data frame into a sonification. Print the result to hear it.
+  contents:
+  - sonify_data
+  - sonify_histogram
+  - sonify_density
+- title: See, save and inspect
+  contents:
+  - sonify_video
+  - save_sound
+  - notes
+- title: Instruments and scales
+  contents:
+  - instruments
+  - sound_scales
+  - sound_setup
+  - note_to_midi
+- title: Data
+  contents:
+  - luge_finals
+  - husker_games
+  - ne_house_years
+
+articles:
+- title: Articles
+  navbar: ~
+  contents:
+  - distributions

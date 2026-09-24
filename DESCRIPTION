@@ -16,6 +16,7 @@ Suggests:
     fluidsynth,
     ggplot2,
     knitr,
+    pkgdown,
     rmarkdown,
     testthat (>= 3.0.0),
     tuneR,
@@ -32,3 +33,6 @@ Depends:
     R (>= 4.1.0)
 LazyData: true
 VignetteBuilder: knitr
+URL: https://mattwaite.github.io/soundeR/,
+    https://github.com/mattwaite/soundeR
+BugReports: https://github.com/mattwaite/soundeR/issues

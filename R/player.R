@@ -57,6 +57,13 @@ print.sonification <- function(x, ...) {
   invisible(x)
 }
 
+# On the pkgdown website, examples that print a sonification get a player.
+#' @exportS3Method pkgdown::pkgdown_print
+pkgdown_print.sonification <- function(x, visible = TRUE) {
+  if (!visible) return(invisible())
+  htmltools::browsable(htmltools::tagList(player_tag(x), htmltools::p(describe(x))))
+}
+
 #' @exportS3Method knitr::knit_print
 knit_print.sonification <- function(x, ...) {
   knitr::asis_output(as.character(player_tag(x)))
