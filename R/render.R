@@ -59,6 +59,12 @@ mix_audio <- function(a, b) {
 # Render (or fetch from the cache) the audio for a sonification.
 get_audio <- function(x) {
   if (!is.null(x$cache$audio)) return(x$cache$audio)
+  if (!is.null(x$settings$glide)) {
+    audio <- render_glide(x$notes, x$settings$glide)
+    x$cache$engine <- rlang::set_names(list(list(engine = "synth", voice = x$settings$glide)), x$settings$glide)
+    x$cache$audio <- audio
+    return(audio)
+  }
   insts <- x$settings$instruments
   choices <- lapply(insts, choose_engine, engine = x$settings$engine)
   names(choices) <- vapply(insts, `[[`, character(1), "name")

@@ -61,7 +61,7 @@ players aren't allowed, like a GitHub README, social media or slides.
 The chart depends on how you made the sonification:
 \itemize{
 \item From \code{\link[=sonify_histogram]{sonify_histogram()}}, a histogram whose bars fill in as the sweep
-passes them.
+passes them. From \code{\link[=sonify_density]{sonify_density()}}, a curve that fills in the same way.
 \item With \code{sequence}, each group gets its own row, like the New York Times's
 2010 Olympic Musical. The row that's playing is highlighted.
 \item Without \code{sequence}, the chart plots \code{pitch} (up the side) against \code{time}

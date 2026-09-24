@@ -126,3 +126,26 @@ test_that("two pitch columns share the y axis, labelled with both names", {
   expect_equal(layout$y_label, "ours and theirs")
   expect_null(layout$legend_title)
 })
+
+test_that("the axes never change from frame to frame, in every layout", {
+  # A playhead that lands exactly on a data point once made the density
+  # curve's axis jump for a frame, so check many frames, including those.
+  st <- style
+  st$point_color <- NULL
+  axis_ranges <- function(s) {
+    layout <- video_layout(s)
+    ts <- c(seq(0, s$settings$total + 0.5, length.out = 60), notes(s)$onset)
+    r <- vapply(ts, function(t) {
+      pp <- ggplot2::ggplot_build(video_frame(layout, t, st))$layout$panel_params[[1]]
+      c(pp$x.range, if (is.numeric(pp$y.range)) pp$y.range else c(0, 0))
+    }, numeric(4))
+    nrow(unique(round(t(r), 9)))
+  }
+  set.seed(1)
+  d <- data.frame(x = c(rnorm(200), rnorm(60, 4)))
+  expect_equal(axis_ranges(sonify_density(d, x, points = 30, length = 3)), 1)
+  expect_equal(axis_ranges(sonify_histogram(d, x, binwidth = 0.5, length = 3)), 1)
+  expect_equal(axis_ranges(race_s), 1)
+  scores <- data.frame(ours = c(70, 81, 64), theirs = c(65, 84, 60))
+  expect_equal(axis_ranges(sonify_data(scores, c(ours, theirs), instrument = "sine")), 1)
+})

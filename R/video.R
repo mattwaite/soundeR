@@ -8,7 +8,7 @@
 #' The chart depends on how you made the sonification:
 #'
 #' * From [sonify_histogram()], a histogram whose bars fill in as the sweep
-#'   passes them.
+#'   passes them. From [sonify_density()], a curve that fills in the same way.
 #' * With `sequence`, each group gets its own row, like the New York Times's
 #'   2010 Olympic Musical. The row that's playing is highlighted.
 #' * Without `sequence`, the chart plots `pitch` (up the side) against `time`
@@ -115,7 +115,16 @@ video_layout <- function(x) {
   voices <- x$settings$voices
   n$voice_key <- if (is.null(voices)) factor("all") else factor(n$voice, levels = voices)
   common <- list(voices = voices, legend_title = labels$voice)
-  if (!is.null(x$settings$histogram)) {
+  if (!is.null(x$settings$density)) {
+    n <- n[order(n$onset), ]
+    last <- nrow(n)
+    c(common, list(
+      type = "density", notes = n,
+      head_onset = c(n$onset, n$onset[last] + x$settings$density$step),
+      head_x = c(n$x_value, n$x_value[last]),
+      x_label = labels$x, y_label = labels$pitch
+    ))
+  } else if (!is.null(x$settings$histogram)) {
     h <- x$settings$histogram
     # The playhead reaches each bar's left edge as its note starts, and the
     # right edge of the last bar as the sweep ends.
@@ -201,6 +210,26 @@ video_frame <- function(layout, t, style) {
                          fill = style$playhead_color) +
       ggplot2::scale_y_discrete(limits = rev(layout$groups)) +
       ggplot2::coord_cartesian(xlim = layout$x_range + c(-pad, pad)) +
+      ggplot2::labs(x = layout$x_label, y = layout$y_label)
+  } else if (layout$type == "density") {
+    head <- playhead_x(layout$head_onset, layout$head_x, t)
+    color <- colors[[1]]
+    # The played part of the curve, ending exactly at the playhead. Add a
+    # point at the playhead only if the curve doesn't already have one there:
+    # a repeated x would make the area double up at that spot.
+    played <- n[n$x_value <= head, c("x_value", "value")]
+    if (nrow(played) > 0 && !any(abs(n$x_value - head) < 1e-9)) {
+      at_head <- stats::approx(n$x_value, n$value, xout = head)$y
+      played <- rbind(played, data.frame(x_value = head, value = at_head))
+    }
+    p <- ggplot2::ggplot(n, ggplot2::aes(x = .data$x_value, y = .data$value)) +
+      ggplot2::geom_area(fill = "#e3e3e3", position = "identity") +
+      (if (nrow(played) > 1) ggplot2::geom_area(data = played, fill = color, position = "identity")) +
+      ggplot2::geom_line(colour = color, linewidth = 0.6) +
+      ggplot2::geom_vline(xintercept = head, colour = style$playhead_color, linewidth = 0.9) +
+      # Fixed limits, so nothing drawn in one frame can move the axis.
+      ggplot2::scale_y_continuous(limits = c(0, max(n$value)),
+                                  expand = ggplot2::expansion(mult = c(0, 0.05))) +
       ggplot2::labs(x = layout$x_label, y = layout$y_label)
   } else if (layout$type == "histogram") {
     # Bars not yet played are light gray, so the shape shows from the start.

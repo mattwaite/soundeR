@@ -113,6 +113,38 @@ Now you can hear the handful of houses from the early 1800s rising toward
 the 1900s instead of sitting on one low note. The trade-off is that
 differences between big bins sound smaller than they are.
 
+## A smooth curve
+
+A histogram's bins are all-or-nothing: a house built in 1909 counts toward
+one bar and a house built in 1910 toward the next. A density curve, like
+`ggplot2::geom_density()`, smooths the distribution instead. `sonify_density()`
+plays that curve as one continuous tone that glides up where there are more
+houses and down where there are fewer:
+
+```{r}
+ne_house_years |>
+  sonify_density(year_built, weight = houses, adjust = 4)
+```
+
+`adjust` sets how smooth the curve is, the same as in `geom_density()`.
+With `adjust = 4` you hear three rises: to a peak around 1916, a dip in the
+late 1930s, a long climb to about 1971, a sag around 1992, and a last peak
+around 2001. With the default of `adjust = 1`, the curve is detailed enough
+to wobble at 1901, 1910 and 1920, the round-number years again:
+
+```{r}
+ne_house_years |>
+  sonify_density(year_built, weight = houses)
+```
+
+The glide uses soundeR's built-in tones. To hear the curve on a real
+instrument, add `glide = FALSE`, which plays it as a quick run of notes:
+
+```{r}
+ne_house_years |>
+  sonify_density(year_built, weight = houses, adjust = 4, glide = FALSE, instrument = "marimba")
+```
+
 ## Watch the edges of your data
 
 The last two years in this data, 2025 and 2026, were only partly recorded
@@ -145,7 +177,7 @@ then scatter through the blowouts, including five wins by 30 or more.
 ## Seeing it
 
 `sonify_video()` draws a sonified histogram as a histogram, with bars that
-fill in as the sweep passes them:
+fill in as the sweep passes them. A density curve fills in the same way.
 
 ```{r, eval = FALSE}
 ne_house_years |>
