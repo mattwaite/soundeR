@@ -18,7 +18,7 @@ notes(x)
 - x:
 
   A sonification made by
-  [`sonify_data()`](https://mattwaite.github.io/soundeR/reference/sonify_data.md).
+  [`sonify_data()`](https://www.mattwaite.com/soundeR/reference/sonify_data.md).
 
 ## Value
 

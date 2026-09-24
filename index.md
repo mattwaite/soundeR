@@ -53,14 +53,14 @@ husker_games |>
 In RStudio or Positron, printing a sonification opens an audio player in
 the Viewer pane. In Quarto and R Markdown documents, the player appears
 on the page.
-[`notes()`](https://mattwaite.github.io/soundeR/reference/notes.md)
-shows the note each row became, and
-[`save_sound()`](https://mattwaite.github.io/soundeR/reference/save_sound.md)
+[`notes()`](https://www.mattwaite.com/soundeR/reference/notes.md) shows
+the note each row became, and
+[`save_sound()`](https://www.mattwaite.com/soundeR/reference/save_sound.md)
 saves it as `.mp3`, `.wav` or `.mid`.
 
 ## Hearing a distribution
 
-[`sonify_histogram()`](https://mattwaite.github.io/soundeR/reference/sonify_histogram.md)
+[`sonify_histogram()`](https://www.mattwaite.com/soundeR/reference/sonify_histogram.md)
 is a histogram for your ears: it sweeps across the bins from low to
 high, and the more rows in a bin, the higher the note. `ne_house_years`
 counts Nebraska’s single-family houses by the year they were built:
@@ -76,7 +76,7 @@ years like 1900. With `binwidth = 10`, the spikes disappear and the
 shape of a century of building comes through.
 
 See
-[`vignette("soundeR")`](https://mattwaite.github.io/soundeR/articles/soundeR.md)
+[`vignette("soundeR")`](https://www.mattwaite.com/soundeR/articles/soundeR.md)
 for a full walkthrough, and
-[`vignette("distributions")`](https://mattwaite.github.io/soundeR/articles/distributions.md)
+[`vignette("distributions")`](https://www.mattwaite.com/soundeR/articles/distributions.md)
 for more on distributions.

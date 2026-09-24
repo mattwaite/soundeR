@@ -67,7 +67,7 @@ sonify_density(
 - scale:
 
   The musical scale notes snap to when `glide = FALSE`. See
-  [`sound_scales()`](https://mattwaite.github.io/soundeR/reference/sound_scales.md).
+  [`sound_scales()`](https://www.mattwaite.com/soundeR/reference/sound_scales.md).
   The glide always follows the curve exactly.
 
 - key:
@@ -88,12 +88,12 @@ sonify_density(
   How to make the sound. `"auto"` uses real instruments when the
   fluidsynth package and a soundfont are available, and the built-in
   synth otherwise. See
-  [`sound_setup()`](https://mattwaite.github.io/soundeR/reference/sound_setup.md).
+  [`sound_setup()`](https://www.mattwaite.com/soundeR/reference/sound_setup.md).
 
 ## Value
 
 A `sonification` object. Print it to hear it, or pass it to
-[`sonify_video()`](https://mattwaite.github.io/soundeR/reference/sonify_video.md)
+[`sonify_video()`](https://www.mattwaite.com/soundeR/reference/sonify_video.md)
 to see the curve.
 
 ## Details
@@ -107,8 +107,8 @@ The glide uses soundeR's built-in sounds (`"sine"`, `"triangle"` or
 `glide = FALSE`, the curve is played as a quick run of notes instead,
 and any instrument works.
 
-[`notes()`](https://mattwaite.github.io/soundeR/reference/notes.md) on
-the result has one row per point along the curve: `x_value` is where the
+[`notes()`](https://www.mattwaite.com/soundeR/reference/notes.md) on the
+result has one row per point along the curve: `x_value` is where the
 point sits, `value` is the curve's height there.
 
 ## Examples

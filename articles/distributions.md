@@ -1,6 +1,6 @@
 # Hearing distributions
 
-[`sonify_data()`](https://mattwaite.github.io/soundeR/reference/sonify_data.md)
+[`sonify_data()`](https://www.mattwaite.com/soundeR/reference/sonify_data.md)
 plays rows in order, which works when the order means something: games
 in a season, sleds crossing a finish line. But a lot of data isn’t a
 sequence. For the ages of houses in a state, the order of the rows is
@@ -9,7 +9,7 @@ are of each age.
 
 A histogram shows a distribution by sorting values into bins and drawing
 a bar for each one.
-[`sonify_histogram()`](https://mattwaite.github.io/soundeR/reference/sonify_histogram.md)
+[`sonify_histogram()`](https://www.mattwaite.com/soundeR/reference/sonify_histogram.md)
 does the same thing for your ears. It sweeps across the bins from lowest
 to highest, playing one note per bin. The more rows in a bin, the higher
 and louder the note. Empty bins are silent.
@@ -61,8 +61,8 @@ sharp drop in the 1930s, the Depression, followed by a long rise after
 World War II that peaks in the 1970s, a dip in the 1980s, another peak
 in the 2000s, and a fall after the 2008 housing crash.
 
-[`notes()`](https://mattwaite.github.io/soundeR/reference/notes.md)
-shows each bin’s edges and count:
+[`notes()`](https://www.mattwaite.com/soundeR/reference/notes.md) shows
+each bin’s edges and count:
 
 ``` r
 
@@ -168,7 +168,7 @@ toward one bar and a house built in 1910 toward the next. A density
 curve, like
 [`ggplot2::geom_density()`](https://ggplot2.tidyverse.org/reference/geom_density.html),
 smooths the distribution instead.
-[`sonify_density()`](https://mattwaite.github.io/soundeR/reference/sonify_density.md)
+[`sonify_density()`](https://www.mattwaite.com/soundeR/reference/sonify_density.md)
 plays that curve as one continuous tone that glides up where there are
 more houses and down where there are fewer:
 
@@ -235,7 +235,7 @@ to 20 points, then scatter through the blowouts, including five wins by
 
 ## Seeing it
 
-[`sonify_video()`](https://mattwaite.github.io/soundeR/reference/sonify_video.md)
+[`sonify_video()`](https://www.mattwaite.com/soundeR/reference/sonify_video.md)
 draws a sonified histogram as a histogram, with bars that fill in as the
 sweep passes them. A density curve fills in the same way.
 

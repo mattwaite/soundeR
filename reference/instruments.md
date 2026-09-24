@@ -4,7 +4,7 @@ Built-in synth sounds (`"sine"`, `"triangle"`, `"square"`, `"bell"`,
 `"pluck"`) work everywhere. The 128 General MIDI instruments, such as
 `"piano"`, `"xylophone"` or `"cello"`, use real recorded sounds through
 the fluidsynth package. See
-[`sound_setup()`](https://mattwaite.github.io/soundeR/reference/sound_setup.md).
+[`sound_setup()`](https://www.mattwaite.com/soundeR/reference/sound_setup.md).
 
 ## Usage
 

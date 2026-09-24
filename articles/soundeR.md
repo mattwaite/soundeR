@@ -6,7 +6,7 @@ notes, the gap between two events can become the silence between two
 notes, and a whole season of games can become a short tune.
 
 soundeR does this with one function,
-[`sonify_data()`](https://mattwaite.github.io/soundeR/reference/sonify_data.md).
+[`sonify_data()`](https://www.mattwaite.com/soundeR/reference/sonify_data.md).
 It works like the rest of the tidyverse: give it a data frame, tell it
 which columns to listen to, and print the result. In RStudio or Positron
 an audio player appears in the Viewer pane. In a Quarto or R Markdown
@@ -125,9 +125,9 @@ grouped data without `sequence`, soundeR reminds you of that.
 ## What did the data become?
 
 Every row became a note.
-[`notes()`](https://mattwaite.github.io/soundeR/reference/notes.md)
-shows you exactly which one, the same way you’d look at the data behind
-a chart:
+[`notes()`](https://www.mattwaite.com/soundeR/reference/notes.md) shows
+you exactly which one, the same way you’d look at the data behind a
+chart:
 
 ``` r
 
@@ -207,7 +207,7 @@ note: a three-point loss at Michigan in late January.
 The pitches snap to a **pentatonic scale**, the five-note scale you get
 from only the black keys of a piano. Any data sounds reasonably musical
 on it. The real numbers are still there in
-[`notes()`](https://mattwaite.github.io/soundeR/reference/notes.md).
+[`notes()`](https://www.mattwaite.com/soundeR/reference/notes.md).
 
 ### Your choices change what people hear
 
@@ -276,7 +276,7 @@ husker_games |>
 
 ## Picking an instrument
 
-[`instruments()`](https://mattwaite.github.io/soundeR/reference/instruments.md)
+[`instruments()`](https://www.mattwaite.com/soundeR/reference/instruments.md)
 lists everything you can use:
 
 ``` r
@@ -343,14 +343,14 @@ on Jan. 13, they’re far apart.
 Put on headphones and you’ll also hear the two voices in different
 places: with more than one voice, soundeR spreads them from left to
 right. The `pan` column in
-[`notes()`](https://mattwaite.github.io/soundeR/reference/notes.md) says
+[`notes()`](https://www.mattwaite.com/soundeR/reference/notes.md) says
 where each note sits, from -1 (left) to 1 (right). Use `pan = "left"`,
 `pan = "right"` or any number in between to place notes yourself,
 `pan = 0` to keep everything in the center, or map a column, like
 `pan = location`, to spread groups across the stereo field.
 
-[`notes()`](https://mattwaite.github.io/soundeR/reference/notes.md)
-shows which voice each note belongs to:
+[`notes()`](https://www.mattwaite.com/soundeR/reference/notes.md) shows
+which voice each note belongs to:
 
 ``` r
 
@@ -398,7 +398,7 @@ tells you which groups it filled in.
 
 ## Saving your sound
 
-[`save_sound()`](https://mattwaite.github.io/soundeR/reference/save_sound.md)
+[`save_sound()`](https://www.mattwaite.com/soundeR/reference/save_sound.md)
 saves a sonification as a file. The ending of the file name picks the
 format:
 
@@ -416,7 +416,7 @@ save_sound(season, "husker-season.mid") # to open in GarageBand or MuseScore
 
 Audio players don’t work everywhere. GitHub, most social media sites and
 some slide software won’t play them.
-[`sonify_video()`](https://mattwaite.github.io/soundeR/reference/sonify_video.md)
+[`sonify_video()`](https://www.mattwaite.com/soundeR/reference/sonify_video.md)
 turns a sonification into an MP4 video: a chart of your data, with a
 playhead that moves across it and dots that fill in as each note plays.
 

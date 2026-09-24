@@ -3,4 +3,4 @@
 ### Articles
 
 - [Hearing
-  distributions](https://mattwaite.github.io/soundeR/articles/distributions.md):
+  distributions](https://www.mattwaite.com/soundeR/articles/distributions.md):

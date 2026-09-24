@@ -33,7 +33,7 @@ sonify_video(
 - x:
 
   A sonification made by
-  [`sonify_data()`](https://mattwaite.github.io/soundeR/reference/sonify_data.md).
+  [`sonify_data()`](https://www.mattwaite.com/soundeR/reference/sonify_data.md).
 
 - path:
 
@@ -84,9 +84,9 @@ sonify_video(
 The chart depends on how you made the sonification:
 
 - From
-  [`sonify_histogram()`](https://mattwaite.github.io/soundeR/reference/sonify_histogram.md),
+  [`sonify_histogram()`](https://www.mattwaite.com/soundeR/reference/sonify_histogram.md),
   a histogram whose bars fill in as the sweep passes them. From
-  [`sonify_density()`](https://mattwaite.github.io/soundeR/reference/sonify_density.md),
+  [`sonify_density()`](https://www.mattwaite.com/soundeR/reference/sonify_density.md),
   a curve that fills in the same way.
 
 - With `sequence`, each group gets its own row, like the New York

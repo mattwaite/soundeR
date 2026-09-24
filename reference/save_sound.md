@@ -15,7 +15,7 @@ save_sound(x, path)
 - x:
 
   A sonification made by
-  [`sonify_data()`](https://mattwaite.github.io/soundeR/reference/sonify_data.md).
+  [`sonify_data()`](https://www.mattwaite.com/soundeR/reference/sonify_data.md).
 
 - path:
 
@@ -31,5 +31,5 @@ save_sound(x, path)
 s <- sonify_data(data.frame(x = c(1, 5, 3)), x, instrument = "bell")
 path <- tempfile(fileext = ".wav")
 save_sound(s, path)
-#> ✔ Saved /tmp/Rtmp5Ka56P/file20d04f236a90.wav.
+#> ✔ Saved /tmp/Rtmp8fgb9q/file1fdf4bfd2592.wav.
 ```

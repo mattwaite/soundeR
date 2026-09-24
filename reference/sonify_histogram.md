@@ -56,7 +56,7 @@ sonify_histogram(
 - instrument:
 
   The instrument to use (see
-  [`instruments()`](https://mattwaite.github.io/soundeR/reference/instruments.md)).
+  [`instruments()`](https://www.mattwaite.com/soundeR/reference/instruments.md)).
   With more than one voice, one instrument per voice, in order or named
   by voice. Voices you leave out play the piano.
 
@@ -82,7 +82,7 @@ sonify_histogram(
 - scale:
 
   The musical scale that pitches snap to. See
-  [`sound_scales()`](https://mattwaite.github.io/soundeR/reference/sound_scales.md).
+  [`sound_scales()`](https://www.mattwaite.com/soundeR/reference/sound_scales.md).
   The default, `"pentatonic"`, sounds pleasant with any data. `"happy"`
   is another name for it, and `"sad"` switches to a minor pentatonic.
   With `"none"`, the built-in synth plays exact frequencies, but real
@@ -101,7 +101,7 @@ sonify_histogram(
   How to make the sound. `"auto"` uses real instruments when the
   fluidsynth package and a soundfont are available, and the built-in
   synth otherwise. See
-  [`sound_setup()`](https://mattwaite.github.io/soundeR/reference/sound_setup.md).
+  [`sound_setup()`](https://www.mattwaite.com/soundeR/reference/sound_setup.md).
 
 - force:
 
@@ -110,7 +110,7 @@ sonify_histogram(
 ## Value
 
 A `sonification` object. Print it to hear it, or pass it to
-[`sonify_video()`](https://mattwaite.github.io/soundeR/reference/sonify_video.md)
+[`sonify_video()`](https://www.mattwaite.com/soundeR/reference/sonify_video.md)
 to see it as a histogram.
 
 ## Details
@@ -122,9 +122,9 @@ overall shape.
 If your data is already counted, with one row per value and a column of
 counts, give that column to `weight`.
 
-[`notes()`](https://mattwaite.github.io/soundeR/reference/notes.md) on
-the result has one row per non-empty bin: `bin_start` and `bin_end` give
-its edges (each bin includes its start but not its end), `value` is its
+[`notes()`](https://www.mattwaite.com/soundeR/reference/notes.md) on the
+result has one row per non-empty bin: `bin_start` and `bin_end` give its
+edges (each bin includes its start but not its end), `value` is its
 count, and `row` is the bin's number, counting from the lowest.
 
 ## Examples

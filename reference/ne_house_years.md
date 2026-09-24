@@ -3,7 +3,7 @@
 The number of single-family houses in Nebraska by the year they were
 built, from 1800 to 2026, compiled from parcel records. It's already
 counted, one row per year, so give `houses` to the `weight` argument of
-[`sonify_histogram()`](https://mattwaite.github.io/soundeR/reference/sonify_histogram.md).
+[`sonify_histogram()`](https://www.mattwaite.com/soundeR/reference/sonify_histogram.md).
 
 ## Usage
 

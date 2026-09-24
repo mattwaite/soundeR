@@ -81,7 +81,7 @@ sonify_data(
 - instrument:
 
   The instrument to use (see
-  [`instruments()`](https://mattwaite.github.io/soundeR/reference/instruments.md)).
+  [`instruments()`](https://www.mattwaite.com/soundeR/reference/instruments.md)).
   With more than one voice, one instrument per voice, in order or named
   by voice. Voices you leave out play the piano.
 
@@ -105,7 +105,7 @@ sonify_data(
 - scale:
 
   The musical scale that pitches snap to. See
-  [`sound_scales()`](https://mattwaite.github.io/soundeR/reference/sound_scales.md).
+  [`sound_scales()`](https://www.mattwaite.com/soundeR/reference/sound_scales.md).
   The default, `"pentatonic"`, sounds pleasant with any data. `"happy"`
   is another name for it, and `"sad"` switches to a minor pentatonic.
   With `"none"`, the built-in synth plays exact frequencies, but real
@@ -133,7 +133,7 @@ sonify_data(
   How to make the sound. `"auto"` uses real instruments when the
   fluidsynth package and a soundfont are available, and the built-in
   synth otherwise. See
-  [`sound_setup()`](https://mattwaite.github.io/soundeR/reference/sound_setup.md).
+  [`sound_setup()`](https://www.mattwaite.com/soundeR/reference/sound_setup.md).
 
 - force:
 
@@ -146,10 +146,10 @@ A `sonification` object. Print it to hear it.
 ## Details
 
 Nothing is played or saved until you print the result (or call
-[`save_sound()`](https://mattwaite.github.io/soundeR/reference/save_sound.md)),
+[`save_sound()`](https://www.mattwaite.com/soundeR/reference/save_sound.md)),
 just like a ggplot isn't drawn until it's printed. Use
-[`notes()`](https://mattwaite.github.io/soundeR/reference/notes.md) to
-see exactly which note each row became.
+[`notes()`](https://www.mattwaite.com/soundeR/reference/notes.md) to see
+exactly which note each row became.
 
 ### How timing works
 

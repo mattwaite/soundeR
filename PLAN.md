@@ -145,7 +145,7 @@ ne_houses |>
   ```
 
 - Later:
-  [`sonify_density()`](https://mattwaite.github.io/soundeR/reference/sonify_density.md)
+  [`sonify_density()`](https://www.mattwaite.com/soundeR/reference/sonify_density.md)
   (a continuous tone whose volume follows the density curve), and a
   boxplot-style sonification for comparing distributions
   (`voice = county`).
@@ -154,7 +154,7 @@ ne_houses |>
 a first-class case from the start.** Internally it’s a stat layer that
 turns data into a table of timed events, then passes that table to the
 same renderer as
-[`sonify_data()`](https://mattwaite.github.io/soundeR/reference/sonify_data.md).
+[`sonify_data()`](https://www.mattwaite.com/soundeR/reference/sonify_data.md).
 
 ### 2.4 The NYT Olympic Musical, recreated: time is the data (flagship example)
 
@@ -188,7 +188,7 @@ luge_finals |>
 - The **visual companion** matters: `autoplot()` for this should look
   like the NYT dot plot (one row per event, dots at seconds behind).
   Later,
-  [`sonify_video()`](https://mattwaite.github.io/soundeR/reference/sonify_video.md)
+  [`sonify_video()`](https://www.mattwaite.com/soundeR/reference/sonify_video.md)
   can animate a playhead across it.
 - Stretch: an accent or different note for the gold medalist
   (`accent = place == 1`).
@@ -214,10 +214,10 @@ Phase 1 if Phase 0 shows it installs cleanly.
     by default, so any data sounds musical instead of like a dial-up
     modem. Use sensible range, tempo, and instrument defaults.
 4.  **Returns an object and has no side effects.**
-    [`sonify_data()`](https://mattwaite.github.io/soundeR/reference/sonify_data.md)
+    [`sonify_data()`](https://www.mattwaite.com/soundeR/reference/sonify_data.md)
     returns a `sonification` object. The *print method* plays or embeds
     it, as with ggplot. Saving is explicit
-    ([`save_sound()`](https://mattwaite.github.io/soundeR/reference/save_sound.md)).
+    ([`save_sound()`](https://www.mattwaite.com/soundeR/reference/save_sound.md)).
 5.  **Inspectable.** The object holds a plain tibble of note events that
     students can view, filter, and plot.
 6.  **Zero system dependencies for the default path.** A student on a
@@ -329,9 +329,9 @@ length, scale, key, range, engine), and a lazily cached `$audio`.
 Methods: - [`print()`](https://rdrr.io/r/base/print.html): render if
 needed, then show the player (§6) and a one-line `cli` summary (“48
 notes · 1 voice · 24.0 s · xylophone”). -
-[`notes()`](https://mattwaite.github.io/soundeR/reference/notes.md),
+[`notes()`](https://www.mattwaite.com/soundeR/reference/notes.md),
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html)/`autoplot()`,
-[`save_sound()`](https://mattwaite.github.io/soundeR/reference/save_sound.md),
+[`save_sound()`](https://www.mattwaite.com/soundeR/reference/save_sound.md),
 [`summary()`](https://rdrr.io/r/base/summary.html). - `knit_print()` for
 Quarto/R Markdown.
 
@@ -343,7 +343,7 @@ simultaneous playback, and `then(s1, s2)` for sequential playback. - A
 ggplot-style `+` with layers (`sonify_data(data) + voice(pitch = x)`).
 This is powerful but adds a new idiom for beginners. - Leaning toward:
 `voice =` inside
-[`sonify_data()`](https://mattwaite.github.io/soundeR/reference/sonify_data.md)
+[`sonify_data()`](https://www.mattwaite.com/soundeR/reference/sonify_data.md)
 covers 90% of cases, and add `sound_mix()` later.
 
 ------------------------------------------------------------------------
@@ -411,7 +411,7 @@ covers 90% of cases, and add `sound_mix()` later.
   programs with friendly aliases (`"xylophone"`, `"marimba"`, `"cello"`,
   `"trumpet"`, `"piano"`, `"steel drums"`, …). Fuzzy matching on names,
   and
-  [`instruments()`](https://mattwaite.github.io/soundeR/reference/instruments.md)
+  [`instruments()`](https://www.mattwaite.com/soundeR/reference/instruments.md)
   lists them. *From memory: GM Xylophone = program 14 (1-based) / 13
   (0-based), Marimba = 13/12. Verify against the GM spec when building
   the table.*
@@ -423,7 +423,7 @@ covers 90% of cases, and add `sound_mix()` later.
 ### Tier 2 (later / maybe)
 
 - Stereo panning by voice or by a mapped variable (`pan = shot_x`).
-- [`sonify_video()`](https://mattwaite.github.io/soundeR/reference/sonify_video.md):
+- [`sonify_video()`](https://www.mattwaite.com/soundeR/reference/sonify_video.md):
   an animated plot (gganimate/ggplot frames) with the audio attached via
   `av`. This is the “chart with a soundtrack” deliverable for class
   projects.
@@ -522,12 +522,12 @@ Check licensing/redistribution for each. Store build scripts in
 
 1.  ~~**Function name `sonify()`.**~~ **DECIDED (2026-09-22): the main
     verb is
-    [`sonify_data()`](https://mattwaite.github.io/soundeR/reference/sonify_data.md).**
+    [`sonify_data()`](https://www.mattwaite.com/soundeR/reference/sonify_data.md).**
     This avoids masking CRAN’s `sonify::sonify()`, is easier to search
     for, and gives a `sonify_` prefix family
-    ([`sonify_data()`](https://mattwaite.github.io/soundeR/reference/sonify_data.md),
-    [`sonify_histogram()`](https://mattwaite.github.io/soundeR/reference/sonify_histogram.md),
-    [`sonify_density()`](https://mattwaite.github.io/soundeR/reference/sonify_density.md))
+    ([`sonify_data()`](https://www.mattwaite.com/soundeR/reference/sonify_data.md),
+    [`sonify_histogram()`](https://www.mattwaite.com/soundeR/reference/sonify_histogram.md),
+    [`sonify_density()`](https://www.mattwaite.com/soundeR/reference/sonify_density.md))
     that shows up together with Tab completion, like stringr’s `str_`.
 2.  **Package name.** `soundeR`, `soundr`, and `sonifyr` were **all free
     on CRAN as of 2026-09-22** (checked). The GitHub repo is
@@ -626,18 +626,18 @@ RStudio viewer pane: Matt confirmed by hand (2026-09-23).
 Code lives in `R/`: `pitch.R`, `timing.R`, `instruments.R`,
 `sonify_data.R`, `wav.R`, `synth.R`, `midi.R`, `render.R`, `player.R`. -
 \[x\]
-[`note_to_midi()`](https://mattwaite.github.io/soundeR/reference/note_to_midi.md)
+[`note_to_midi()`](https://www.mattwaite.com/soundeR/reference/note_to_midi.md)
 /
-[`midi_to_note()`](https://mattwaite.github.io/soundeR/reference/note_to_midi.md)
+[`midi_to_note()`](https://www.mattwaite.com/soundeR/reference/note_to_midi.md)
 /
-[`midi_to_freq()`](https://mattwaite.github.io/soundeR/reference/note_to_midi.md),
-[`sound_scales()`](https://mattwaite.github.io/soundeR/reference/sound_scales.md)
+[`midi_to_freq()`](https://www.mattwaite.com/soundeR/reference/note_to_midi.md),
+[`sound_scales()`](https://www.mattwaite.com/soundeR/reference/sound_scales.md)
 (pentatonic, minor_pentatonic, major, minor, blues, chromatic, none),
 and quantization (ties snap down). The default single pitch is the tonic
 nearest mid-range, with ties going up (C5 for C3–C6). - \[x\]
 `sonify_data(data, pitch, time, volume, sequence, instrument, bpm, length, time_scale, gap, scale, key, range, reverse, engine, force)`
 → `sonification` object.
-[`notes()`](https://mattwaite.github.io/soundeR/reference/notes.md)
+[`notes()`](https://www.mattwaite.com/soundeR/reference/notes.md)
 returns the note tibble (§4.3, plus a `sequence` column; `voice` waits
 for Phase 3). `volume` is already mapped (velocity 40–120). - \[x\]
 Synth engine (sine, triangle, square, bell, pluck) at 22.05 kHz mono.
@@ -645,8 +645,8 @@ WAV reader and writer (mono/stereo 16-bit). - \[x\] `print`
 (non-interactive: summary + hint; interactive:
 [`htmltools::html_print()`](https://rstudio.github.io/htmltools/reference/html_print.html)
 player in the viewer), `knit_print` (registered via `@exportS3Method`),
-[`notes()`](https://mattwaite.github.io/soundeR/reference/notes.md),
-[`save_sound()`](https://mattwaite.github.io/soundeR/reference/save_sound.md)
+[`notes()`](https://www.mattwaite.com/soundeR/reference/notes.md),
+[`save_sound()`](https://www.mattwaite.com/soundeR/reference/save_sound.md)
 for `.wav`/`.mp3`/`.mid`. The player embeds **mp3 via av** when
 available (much smaller), otherwise WAV. The summary line reports the
 notes’ span, not the audio length. - \[x\] Long-output guard (warn \> 3
@@ -657,9 +657,9 @@ fluidsynth engine (pulled forward from Phase 2): gain 0.6 → normalize to
 0.9 → trim tail (keep 0.75 s). `engine = "auto"` falls back to a synth
 stand-in (mallets → bell; piano/guitar/bass/ethnic → pluck; else
 triangle) with a rate-limited message.
-[`sound_setup()`](https://mattwaite.github.io/soundeR/reference/sound_setup.md)
+[`sound_setup()`](https://www.mattwaite.com/soundeR/reference/sound_setup.md)
 installs/downloads with friendly messages.
-[`instruments()`](https://mattwaite.github.io/soundeR/reference/instruments.md)
+[`instruments()`](https://www.mattwaite.com/soundeR/reference/instruments.md)
 lists 5 synth + 128 GM instruments (GM names verified against the
 soundfont’s preset headers), plus aliases like `"piano"`, `"guitar"`,
 `"strings"`. - \[x\] Conflicting timing arguments are errors:
@@ -679,11 +679,11 @@ checks. Documented in `R/data.R`, tested in `test-data.R`. - \[x\] “Your
 first sonification” vignette **drafted** (`vignettes/soundeR.Rmd`,
 2026-09-23) for Matt to edit. It covers luge (real time, slow motion,
 `sequence`, computing `behind` yourself),
-[`notes()`](https://mattwaite.github.io/soundeR/reference/notes.md), the
+[`notes()`](https://www.mattwaite.com/soundeR/reference/notes.md), the
 Husker season (pitch, `scale = "none"`, narrow `range`,
 `volume = game_type`, `time = date`),
-[`instruments()`](https://mattwaite.github.io/soundeR/reference/instruments.md),
-[`save_sound()`](https://mattwaite.github.io/soundeR/reference/save_sound.md),
+[`instruments()`](https://www.mattwaite.com/soundeR/reference/instruments.md),
+[`save_sound()`](https://www.mattwaite.com/soundeR/reference/save_sound.md),
 and exercises. It renders in ~15 s to ~2.7 MB with 9 players. Rendering
 from the command line needs
 `RSTUDIO_PANDOC=/Applications/quarto/bin/tools/aarch64` (no standalone
@@ -695,11 +695,11 @@ default was 320k): 112 s went from 4.6 MB to 1.4 MB.
 ### Phase 2 — Real instruments
 
 Mostly done early in Phase 1 (`write_midi()`, GM table,
-[`instruments()`](https://mattwaite.github.io/soundeR/reference/instruments.md),
+[`instruments()`](https://www.mattwaite.com/soundeR/reference/instruments.md),
 fluidsynth engine,
-[`save_sound()`](https://mattwaite.github.io/soundeR/reference/save_sound.md)
+[`save_sound()`](https://www.mattwaite.com/soundeR/reference/save_sound.md)
 mid/mp3,
-[`sound_setup()`](https://mattwaite.github.io/soundeR/reference/sound_setup.md)).
+[`sound_setup()`](https://www.mattwaite.com/soundeR/reference/sound_setup.md)).
 
 Remaining: test on Posit Cloud/Linux; per-instrument sensible default
 ranges (e.g., cello shouldn’t play C6); maybe cache the rendered mp3
@@ -757,25 +757,24 @@ cello note is still sounding at 0.9 s, a 0.2 s one isn’t.
 …) will be Matt’s own example in the blog post announcing the package.
 
 Piano-roll `autoplot()` / the `plot =` route for
-[`sonify_video()`](https://mattwaite.github.io/soundeR/reference/sonify_video.md).
+[`sonify_video()`](https://www.mattwaite.com/soundeR/reference/sonify_video.md).
 
 ### Phase 4 — Distributions (§2.3) — resumed 2026-09-24 with Matt’s data
 
-[`sonify_histogram()`](https://mattwaite.github.io/soundeR/reference/sonify_histogram.md)
+[`sonify_histogram()`](https://www.mattwaite.com/soundeR/reference/sonify_histogram.md)
 (built 2026-09-24): `x`, `weight`, `bins`/`binwidth` (error if both;
 default 30 bins with a nudge), `length = 20` default or `bpm`, `log`.
 **Count → pitch** (volume follows as a backup), not the §2.3 idea of
 count → loudness; see decision 9. Bins line up with multiples of
 `binwidth`, include their start but not their end, with a 1e-9 edge
 tolerance. Implemented by calling
-[`sonify_data()`](https://mattwaite.github.io/soundeR/reference/sonify_data.md)
+[`sonify_data()`](https://www.mattwaite.com/soundeR/reference/sonify_data.md)
 on the non-empty bins with `time = bin`, `time_scale = step`,
 `duration = step`, so empty bins are silences of exactly one step and
 the missing-pitch message never fires.
-[`notes()`](https://mattwaite.github.io/soundeR/reference/notes.md)
-gains `bin_start`/`bin_end`; `row` is the bin number and `value` the
-count.
-[`sonify_video()`](https://mattwaite.github.io/soundeR/reference/sonify_video.md)
+[`notes()`](https://www.mattwaite.com/soundeR/reference/notes.md) gains
+`bin_start`/`bin_end`; `row` is the bin number and `value` the count.
+[`sonify_video()`](https://www.mattwaite.com/soundeR/reference/sonify_video.md)
 has a histogram layout: light-gray bars fill with color as the playhead
 reaches each bar’s left edge. 53 histogram tests.
 
@@ -794,7 +793,7 @@ vs. year bins (the heaping appears and disappears), `log = TRUE`,
 dropping incomplete years, raw data (Husker margins), and a video
 example. It renders to 1.7 MB with 5 players.
 
-[`sonify_density()`](https://mattwaite.github.io/soundeR/reference/sonify_density.md)
+[`sonify_density()`](https://www.mattwaite.com/soundeR/reference/sonify_density.md)
 (built 2026-09-24):
 [`stats::density()`](https://rdrr.io/r/stats/density.html) over the
 data’s range at `points` (120) evenly spaced points, swept over `length`
@@ -809,9 +808,9 @@ snapped to a scale, gliding in log-frequency through the points
 data exactly. R’s [`density()`](https://rdrr.io/r/stats/density.html)
 ignores weights when choosing the bandwidth, which gave 17 years instead
 of 2.4 on `ne_house_years`.
-[`notes()`](https://mattwaite.github.io/soundeR/reference/notes.md)
-gains `x_value`. The video layout is a gray area that fills with color
-up to the playhead. 34 tests. The distributions vignette gains a “smooth
+[`notes()`](https://www.mattwaite.com/soundeR/reference/notes.md) gains
+`x_value`. The video layout is a gray area that fills with color up to
+the playhead. 34 tests. The distributions vignette gains a “smooth
 curve” section: at `adjust = 1` the curve wobbles at 1901/1910/1920; at
 `adjust = 4`, peaks around 1916, 1971 and 2001 with dips around 1937 and
 1992.
@@ -826,27 +825,27 @@ that’s the unknown value, so 1800 is just 4 houses.
 ### Phase 5 — Polish & teaching
 
 **Panning (built 2026-09-24).** `pan =` in
-[`sonify_data()`](https://mattwaite.github.io/soundeR/reference/sonify_data.md):
+[`sonify_data()`](https://www.mattwaite.com/soundeR/reference/sonify_data.md):
 a fixed number (-1 to 1) or word (“left”, “center”, “right”; any value
 that mentions no data column), a numeric column (rescaled -1..1), or a
 categorical column (spaced -0.8..0.8). **Default: several voices spread
 across -0.6..0.6 automatically**; `pan = 0` turns it off. Missing values
 go to the center, with a message.
-[`notes()`](https://mattwaite.github.io/soundeR/reference/notes.md)
-gains `pan`. Rendering: the synth mixes to stereo with equal-power gains
-only when something is panned (centered pieces stay mono); the glide
+[`notes()`](https://www.mattwaite.com/soundeR/reference/notes.md) gains
+`pan`. Rendering: the synth mixes to stereo with equal-power gains only
+when something is panned (centered pieces stay mono); the glide
 interpolates pan per sample; MIDI puts a CC10 on each channel, with
 channels keyed by instrument *and* position (`midi_pans()` coarsens
 positions to 17, then 5, then 3 steps to fit 15 channels, else centers
 everything with a message).
-[`sonify_histogram()`](https://mattwaite.github.io/soundeR/reference/sonify_histogram.md)
+[`sonify_histogram()`](https://www.mattwaite.com/soundeR/reference/sonify_histogram.md)
 and
-[`sonify_density()`](https://mattwaite.github.io/soundeR/reference/sonify_density.md)
+[`sonify_density()`](https://www.mattwaite.com/soundeR/reference/sonify_density.md)
 gain `pan = TRUE`, a left-to-right sweep along the x axis. 40 tests,
 including left/right RMS on real renders. ~~Drums/percussion~~ dropped
 (see Phase 3).
 
-[`sonify_video()`](https://mattwaite.github.io/soundeR/reference/sonify_video.md)
+[`sonify_video()`](https://www.mattwaite.com/soundeR/reference/sonify_video.md)
 **built 2026-09-23** (`R/video.R`, `tests/testthat/test-video.R`),
 pulled forward from Phase 5. Two layouts: with `sequence`, one row per
 group in play order, first on top, with a highlight band and playhead
@@ -860,7 +859,7 @@ point/playhead/highlight colors, `width`/`height` (1280×720), `fps`
 progress bar shows frames. Tests check, for **every** group, that the
 built highlight and playhead y equal that group’s dots’ y. Needs
 ggplot2 + av (Suggests).
-[`sonify_data()`](https://mattwaite.github.io/soundeR/reference/sonify_data.md)
+[`sonify_data()`](https://www.mattwaite.com/soundeR/reference/sonify_data.md)
 now also stores mapping labels in `settings$labels` and a `time_value`
 column in the notes. Original design notes:
 
@@ -878,13 +877,13 @@ column in the notes. Original design notes:
   panel), so it’s the package default, not an option.
 - The playhead, highlight band and played/unplayed fill are layers added
   by
-  [`sonify_video()`](https://mattwaite.github.io/soundeR/reference/sonify_video.md)
+  [`sonify_video()`](https://www.mattwaite.com/soundeR/reference/sonify_video.md)
   and must survive any theme. Keep their colors in explicit aesthetics
   or arguments (`playhead_color =`), not theme elements.
 - **Still to do:** a `plot =` argument so students can build the base
   chart themselves (`autoplot(x) + labs(...) + theme(...) + scale_*()`),
   with
-  [`sonify_video()`](https://mattwaite.github.io/soundeR/reference/sonify_video.md)
+  [`sonify_video()`](https://www.mattwaite.com/soundeR/reference/sonify_video.md)
   adding only the playhead layers. This is the fully ggplot-native
   route.
 - ggplot2 goes in Suggests, used via
@@ -900,7 +899,7 @@ column in the notes. Original design notes:
   inline.
 
 **pkgdown site (built 2026-09-24)**:
-<https://mattwaite.github.io/soundeR/>, deployed by
+<https://www.mattwaite.com/soundeR/>, deployed by
 `.github/workflows/pkgdown.yaml` (the r-lib example plus a
 [`fluidsynth::soundfont_download()`](https://docs.ropensci.org/fluidsynth/reference/soundfonts.html)
 step, so the site’s players use real instruments) to the `gh-pages`
@@ -945,7 +944,7 @@ what’s next.
   distinct from `voice =` (groups play together); raised the priority of
   the fluidsynth piano. New open decision 3a (what `group_by()` means).
 - **2026-09-22 (Phase 0)** — Decided the main verb is
-  [`sonify_data()`](https://mattwaite.github.io/soundeR/reference/sonify_data.md)
+  [`sonify_data()`](https://www.mattwaite.com/soundeR/reference/sonify_data.md)
   (decision 1). Built the package skeleton. Installed
   fluidsynth/tuneR/av. Proved the zero-dependency synth → WAV → base64
   `<audio>` path in the browser and in Quarto. Wrote and
@@ -1008,7 +1007,7 @@ what’s next.
   needs to drag it into GitHub’s web editor, since only uploaded videos
   play in READMEs. `R CMD check` is clean apart from a network-time
   NOTE. **Next:** Matt edits the vignette; decide whether
-  [`sonify_video()`](https://mattwaite.github.io/soundeR/reference/sonify_video.md)
+  [`sonify_video()`](https://www.mattwaite.com/soundeR/reference/sonify_video.md)
   becomes a real function (the prototype suggests it’s cheap); Phase 3
   voices.
 - **2026-09-23 (later)** — Matt caught a bug in the README video: the
@@ -1019,40 +1018,40 @@ what’s next.
   men’s doubles, the middle row, which is symmetric, so it hid the bug.
   Fixed in `spike/05_readme_video.R` and verified with a frame from the
   middle of every event. **Lessons for
-  [`sonify_video()`](https://mattwaite.github.io/soundeR/reference/sonify_video.md):**
+  [`sonify_video()`](https://www.mattwaite.com/soundeR/reference/sonify_video.md):**
   derive every annotation’s position from the same ordering the axis
   uses (better, map it through the data so ggplot places it), and have
   the tests check a frame from every group, including the first and
   last, not one sample.
 - **2026-09-23 (later)** — Matt’s feature request:
-  [`sonify_video()`](https://mattwaite.github.io/soundeR/reference/sonify_video.md)
+  [`sonify_video()`](https://www.mattwaite.com/soundeR/reference/sonify_video.md)
   must accept ggplot2 themes (pre-built or custom), and the default must
   use `plot.title.position = "plot"` (a requirement for his students).
   Design recorded in the Phase 5 roadmap. The README video now uses
   flush-left titles.
 - **2026-09-23 (later)** — Built
-  [`sonify_video()`](https://mattwaite.github.io/soundeR/reference/sonify_video.md)
+  [`sonify_video()`](https://www.mattwaite.com/soundeR/reference/sonify_video.md)
   while Matt edited the vignette (I didn’t touch `vignettes/`; commits
   stage files by name, never `git add -A`). 200 tests. `R CMD check`
   (vignettes skipped) is clean apart from the network-time NOTE. The
   README video (`spike/out/luge_readme.mp4`) is now made by
-  [`sonify_video()`](https://mattwaite.github.io/soundeR/reference/sonify_video.md)
+  [`sonify_video()`](https://www.mattwaite.com/soundeR/reference/sonify_video.md)
   itself. **Next:** the `plot =` argument; mention
-  [`sonify_video()`](https://mattwaite.github.io/soundeR/reference/sonify_video.md)
+  [`sonify_video()`](https://www.mattwaite.com/soundeR/reference/sonify_video.md)
   in the vignette/README once Matt’s edits land.
 - **2026-09-24** — Pulled Matt’s README edits. Built voices (Phase 3),
   both routes, with per-voice video colors. Decisions: no drums; no more
   bundled data (football is Matt’s blog-post example); unlisted voices
   play the piano with a message. **Next:** `duration =`; the `plot =`
   route / piano-roll `autoplot()`; mention voices and
-  [`sonify_video()`](https://mattwaite.github.io/soundeR/reference/sonify_video.md)
+  [`sonify_video()`](https://www.mattwaite.com/soundeR/reference/sonify_video.md)
   in the vignette/README (Matt’s call); Phase 4 distributions.
 - **2026-09-24 (later)** — Matt asked me to update the vignette myself
   (he’ll edit later, building on it). Added “More than one voice” (two
   scores on a shared scale, citing the 58-56 Michigan State and 90-55
   Oregon games; `voice = result` with W = marimba, L = cello, noting the
   redundant encoding), “Making a video”
-  ([`sonify_video()`](https://mattwaite.github.io/soundeR/reference/sonify_video.md)
+  ([`sonify_video()`](https://www.mattwaite.com/soundeR/reference/sonify_video.md)
   examples with `eval = FALSE`, themes, flush-left titles), and two new
   exercises. The vignette renders to 3.3 MB with 11 players.
 - **2026-09-24 (later)** — Cleaned up stale plan items: viewer check
@@ -1066,19 +1065,19 @@ what’s next.
   secret scan of the full history came back clean. **Phase 4 is on
   hold** while Matt thinks about the last phase and the data. Don’t
   start
-  [`sonify_histogram()`](https://mattwaite.github.io/soundeR/reference/sonify_histogram.md)
+  [`sonify_histogram()`](https://www.mattwaite.com/soundeR/reference/sonify_histogram.md)
   without checking with him.
 - **2026-09-24 (later)** — Matt’s friends gave good feedback, and he
   said to leave the plan public and resume Phase 4 with his Nebraska
   house-year data. Built
-  [`sonify_histogram()`](https://mattwaite.github.io/soundeR/reference/sonify_histogram.md),
+  [`sonify_histogram()`](https://www.mattwaite.com/soundeR/reference/sonify_histogram.md),
   the `ne_house_years` dataset, a histogram video layout, and the
   “Hearing distributions” vignette. Changed the histogram mapping to
   count → pitch (decision 9). Caught two wrong claims while writing the
   vignette (Husker losses aren’t low *because* they’re losses; there
   were 5 wins by 30+, not 4). Every vignette number is now checked
   against the data. **Next:**
-  [`sonify_density()`](https://mattwaite.github.io/soundeR/reference/sonify_density.md);
+  [`sonify_density()`](https://www.mattwaite.com/soundeR/reference/sonify_density.md);
   Matt to confirm the data source wording and the heaping explanation.
 - **2026-09-24 (later)** — Matt: the source line stands (the file came
   from the state’s Office of the Chief Information Officer; Matt
@@ -1086,7 +1085,7 @@ what’s next.
   documentation; about 13,000 parcels have NA build years. Removed every
   “likely estimated” claim, added the NA note, committed and pushed the
   histogram work (602a227). Built
-  [`sonify_density()`](https://mattwaite.github.io/soundeR/reference/sonify_density.md).
+  [`sonify_density()`](https://www.mattwaite.com/soundeR/reference/sonify_density.md).
   **Phase 4 is complete.** **Next:** Phase 5 (panning, pkgdown site,
   teaching materials, accessibility review, CRAN), or the `plot =` route
   for videos.
@@ -1107,3 +1106,11 @@ what’s next.
   ~5 MB limit), the package-name decision, data licensing notes
   (Wikipedia CC BY-SA; ESPN via hoopR), win-builder/R-hub checks,
   NEWS.md, cran-comments.md, version 0.1.0.
+- **2026-09-24 (later)** — The site is live at
+  **<https://www.mattwaite.com/soundeR/>**. Matt’s GitHub Pages uses a
+  custom domain, so mattwaite.github.io/soundeR/ 301-redirects there;
+  `_pkgdown.yml` and DESCRIPTION now use the real address. The first
+  Actions build took 5 minutes and passed on ubuntu-latest, which is
+  also the first proof that fluidsynth and the soundfont download work
+  on Linux. On the live site, all players play with real instruments (no
+  stand-in messages) and both README videos play.
