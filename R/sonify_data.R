@@ -46,6 +46,11 @@
 #'   once, one voice each.
 #' @param time Optional. A column that decides when each note plays.
 #' @param volume Optional. A column to map to loudness. Bigger is louder.
+#' @param duration Optional. How long each note lasts. A number, like
+#'   `duration = 0.2`, sets every note to that many seconds. A column makes
+#'   bigger values longer notes, spread across `duration_range`. A column of
+#'   durations (like `end - start`) plays in real time, times `time_scale` if
+#'   you set it.
 #' @param sequence Optional. A column of groups to play one after another.
 #' @param voice Optional. A column of groups, each played by its own
 #'   instrument.
@@ -63,6 +68,8 @@
 #'   instruments play the nearest semitone.
 #' @param key The key of the scale, like `"C"`, `"G"` or `"Bb"`.
 #' @param range The lowest and highest notes to use, like `c("C3", "C6")`.
+#' @param duration_range The shortest and longest notes, in seconds, when
+#'   `duration` is a column of numbers or categories.
 #' @param reverse If `TRUE`, bigger numbers become lower notes.
 #' @param engine How to make the sound. `"auto"` uses real instruments when
 #'   the fluidsynth package and a soundfont are available, and the built-in
@@ -96,9 +103,11 @@
 #' race <- data.frame(behind = c(0, 0.09, 0.21, 0.30, 0.52, 0.55, 0.91, 1.34))
 #' sonify_data(race, time = behind, time_scale = 2, instrument = "pluck")
 sonify_data <- function(data, pitch = NULL, time = NULL, volume = NULL,
-                        sequence = NULL, voice = NULL, instrument = "piano", bpm = 120,
+                        duration = NULL, sequence = NULL, voice = NULL,
+                        instrument = "piano", bpm = 120,
                         length = NULL, time_scale = NULL, gap = 1,
                         scale = "pentatonic", key = "C", range = c("C3", "C6"),
+                        duration_range = c(0.1, 1.5),
                         reverse = FALSE, engine = c("auto", "synth", "fluidsynth"),
                         force = FALSE) {
   if (!is.data.frame(data)) {
@@ -107,6 +116,7 @@ sonify_data <- function(data, pitch = NULL, time = NULL, volume = NULL,
   q_pitch <- rlang::enquo(pitch)
   q_time <- rlang::enquo(time)
   q_volume <- rlang::enquo(volume)
+  q_duration <- rlang::enquo(duration)
   q_sequence <- rlang::enquo(sequence)
   q_voice <- rlang::enquo(voice)
   pitch_qs <- split_pitch(q_pitch)
@@ -121,6 +131,7 @@ sonify_data <- function(data, pitch = NULL, time = NULL, volume = NULL,
   scale <- check_scale(scale)
   key_pc <- key_to_pc(key)
   range_midi <- range_to_midi(range)
+  check_duration_range(duration_range)
   check_timing_args(
     time_given = !rlang::quo_is_null(q_time), time_scale = time_scale,
     length = length, bpm = bpm, bpm_given = !missing(bpm),
@@ -141,6 +152,18 @@ sonify_data <- function(data, pitch = NULL, time = NULL, volume = NULL,
   pitch_list <- lapply(pitch_qs, eval_mapping, data = data, arg = "pitch", call = rlang::current_env())
   time_vals <- eval_mapping(q_time, data, "time")
   volume_vals <- eval_mapping(q_volume, data, "volume")
+  duration_vals <- eval_mapping(q_duration, data, "duration")
+  note_duration <- if (!is.null(duration_vals)) {
+    # A fixed number of seconds (0.2, 1/4, a variable like `len`) mentions no
+    # columns of the data; a mapping does.
+    literal <- !any(all.vars(rlang::quo_get_expr(q_duration)) %in% names(data))
+    map_duration(duration_vals, literal = literal,
+                 duration_range = duration_range, time_scale = time_scale)
+  }
+  if (!is.null(note_duration) && anyNA(note_duration)) {
+    n_missing <- sum(is.na(note_duration))
+    cli::cli_inform(c("i" = "{n_missing} row{?s} with a missing duration got the default note length."))
+  }
   sequence_vals <- eval_mapping(q_sequence, data, "sequence")
   voice_vals <- eval_mapping(q_voice, data, "voice")
 
@@ -159,7 +182,7 @@ sonify_data <- function(data, pitch = NULL, time = NULL, volume = NULL,
 
   timing <- compute_timing(
     n, time = time_vals, sequence = sequence_vals, bpm = bpm, length = length,
-    time_scale = time_scale, gap = gap
+    time_scale = time_scale, gap = gap, note_duration = note_duration
   )
 
   if (length(pitch_list) == 0) {
@@ -211,10 +234,11 @@ sonify_data <- function(data, pitch = NULL, time = NULL, volume = NULL,
     settings = list(
       instruments = insts, voices = voice_levels, engine = engine, bpm = bpm, length = length,
       time_scale = time_scale, gap = gap, scale = scale, key = key,
-      range = range, reverse = reverse, total = total,
+      range = range, duration_range = duration_range, reverse = reverse, total = total,
       labels = list(
         pitch = if (length(pitch_qs)) names(pitch_qs), time = mapping_label(q_time),
-        volume = mapping_label(q_volume), sequence = mapping_label(q_sequence),
+        volume = mapping_label(q_volume), duration = mapping_label(q_duration),
+        sequence = mapping_label(q_sequence),
         voice = mapping_label(q_voice)
       )
     )

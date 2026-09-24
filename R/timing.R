@@ -27,10 +27,13 @@ sequence_levels <- function(x) {
 # With `sequence`, each group gets its own timeline and the groups play one
 # after another, `gap` seconds apart.
 #
+# `note_duration` (optional, seconds per row) overrides the default note
+# length; missing values fall back to the default.
+#
 # Returns list(onset, duration, total).
 compute_timing <- function(n, time = NULL, sequence = NULL, bpm = 120,
                            length = NULL, time_scale = NULL, gap = 1,
-                           call = rlang::caller_env()) {
+                           note_duration = NULL, call = rlang::caller_env()) {
   groups <- if (is.null(sequence)) {
     rep("1", n)
   } else {
@@ -61,6 +64,7 @@ compute_timing <- function(n, time = NULL, sequence = NULL, bpm = 120,
     }
     dur <- min(max(step, 0.08), 2)
   }
+  dur <- if (is.null(note_duration)) rep(dur, n) else ifelse(is.na(note_duration), dur, note_duration)
 
   tnum <- if (is.null(time)) NULL else time_to_numeric(time, call = call)
   onset <- rep(NA_real_, n)
@@ -85,12 +89,13 @@ compute_timing <- function(n, time = NULL, sequence = NULL, bpm = 120,
       local[is.na(tg)] <- NA_real_
     }
     onset[idx] <- offset + local
-    group_end <- max(c(local, 0), na.rm = TRUE) + dur
+    # The next group starts `gap` seconds after this group's last note ends.
+    group_end <- max(c(local + dur[idx], dur[idx][1]), na.rm = TRUE)
     offset <- offset + group_end + gap
   }
 
-  total <- max(c(onset, 0), na.rm = TRUE) + dur
-  list(onset = onset, duration = rep(dur, n), total = total)
+  total <- max(c(onset + dur, dur[1]), na.rm = TRUE)
+  list(onset = onset, duration = dur, total = total)
 }
 
 check_timing_args <- function(time_given, time_scale, length, bpm, bpm_given,
@@ -147,5 +152,58 @@ check_total_length <- function(total, force, call = rlang::caller_env()) {
       "This sonification lasts about {round(mins, 1)} minutes.",
       "i" = "Set {.arg length} to a number of seconds to make it shorter, like {.code length = 60}."
     ), call = call)
+  }
+}
+
+# Map a `duration` mapping to seconds per row (NA stays NA).
+#   a number you typed (duration = 0.2): every note lasts that long
+#   a duration column (difftime/hms):     real time, times time_scale if set
+#   numbers:                              rescaled into `duration_range`
+#   text/factors/logical:                 one length per category
+map_duration <- function(values, literal, duration_range, time_scale = NULL,
+                         call = rlang::caller_env()) {
+  if (literal) {
+    if (!is.numeric(values) || any(values <= 0)) {
+      cli::cli_abort("{.arg duration} must be a positive number of seconds, like {.code duration = 0.25}.", call = call)
+    }
+    return(as.numeric(values))
+  }
+  if (inherits(values, "difftime")) {
+    secs <- as.numeric(values, units = "secs") * (time_scale %||% 1)
+    if (any(secs < 0, na.rm = TRUE)) cli::cli_abort("{.arg duration} can't be negative.", call = call)
+    return(pmax(secs, 0.03))
+  }
+  if (inherits(values, c("Date", "POSIXt"))) {
+    cli::cli_abort(c(
+      "{.arg duration} needs lengths of time, not dates.",
+      "i" = "Subtract two dates or times to get one, like {.code duration = end - start}."
+    ), call = call)
+  }
+  if (is.logical(values) || is.character(values)) values <- factor(values)
+  if (is.factor(values)) {
+    k <- nlevels(values)
+    lens <- if (k == 1) mean(duration_range) else seq(duration_range[1], duration_range[2], length.out = k)
+    return(lens[as.integer(values)])
+  }
+  if (!is.numeric(values)) {
+    cli::cli_abort(
+      "{.arg duration} must be numbers, text, or durations, not {.obj_type_friendly {values}}.",
+      call = call
+    )
+  }
+  finite <- values[is.finite(values)]
+  if (length(finite) == 0 || diff(range(finite)) == 0) {
+    return(ifelse(is.na(values), NA_real_, mean(duration_range)))
+  }
+  scales::rescale(values, to = duration_range, from = range(finite))
+}
+
+check_duration_range <- function(duration_range, call = rlang::caller_env()) {
+  if (!is.numeric(duration_range) || base::length(duration_range) != 2 || anyNA(duration_range) ||
+      duration_range[1] <= 0 || duration_range[1] >= duration_range[2]) {
+    cli::cli_abort(
+      "{.arg duration_range} must be two positive numbers of seconds, shortest first, like {.code c(0.1, 1.5)}.",
+      call = call
+    )
   }
 }

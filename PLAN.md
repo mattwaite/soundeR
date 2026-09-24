@@ -353,7 +353,7 @@ Check licensing/redistribution for each. Store build scripts in `data-raw/`.
 - [x] Render that MIDI with fluidsynth (2026-09-22). The soundfont downloaded in ~1.5 s on a fast connection (31.3 MB unzipped .sf2). `midi_convert()` writes **both `.wav` and `.mp3` by file extension**. Output is **44.1 kHz 16-bit stereo**. Rendering takes about 1 s. All 8 note onsets in the mock Olympic race land within 10 ms of target. Xylophone (GM program 13, 0-based) also works. Listening page: `spike/out/olympic.html`.
   - **Gotcha: renders are very quiet.** The fluidsynth default `synth.gain` is 0.2, giving a peak of ~0.06 (≈ −24 dBFS). Fix in the package: render with `settings = list(synth.gain = 1.0)` (peak ~0.28), then **peak-normalize in R** to ~0.9. So always render to WAV first, normalize, then encode mp3 via `av` if needed.
   - **Gotcha: tail padding.** The output runs ~3 s past the last note-off (reverb/release). Trim trailing samples below ~−60 dB, keeping a short natural tail (~0.5–1 s).
-- [ ] Still untested: the RStudio/Positron **viewer pane** specifically (the browser test covers the same mechanism, but confirm by hand).
+- [x] RStudio viewer pane: Matt confirmed by hand (2026-09-23).
 
 ### Phase 1 — MVP: "a season sounds like something" (§2.1)
 Code lives in `R/`: `pitch.R`, `timing.R`, `instruments.R`, `sonify_data.R`, `wav.R`, `synth.R`, `midi.R`, `render.R`, `player.R`.
@@ -388,16 +388,16 @@ Code lives in `R/`: `pitch.R`, `timing.R`, `instruments.R`, `sonify_data.R`, `wa
   - 244 tests; full `R CMD check` is clean (0/0/0) including the vignette.
 - [x] ~~Drums/percussion~~ **dropped** (Matt, 2026-09-24): not worth it. The soundfont does have 11 drum kits in bank 128 if it's ever wanted.
 - [x] `time =` mapping (dates/datetimes/numerics). Done in Phase 1.
-- [ ] `duration =` mapping.
-- [ ] ~~Bundle `ws_pitches`~~ **No more bundled datasets** (Matt, 2026-09-24). Football play-by-play (run = tuba, completed pass = harp, …) will be Matt's own example in the blog post announcing the package.
+- [x] `duration =` mapping (2026-09-24). A number or a variable that isn't a column (`0.2`, `len`) sets every note in seconds; a numeric column is rescaled into `duration_range` (default `c(0.1, 1.5)` s); categories get evenly spaced lengths; difftime/hms columns play in real time (× `time_scale` if set); Dates error with a hint. Missing values get the default length, with a message. Sequence groups start `gap` seconds after their longest-ringing note ends. Checked by ear-proxy: a 1.5 s cello note is still sounding at 0.9 s, a 0.2 s one isn't.
+- [x] ~~Bundle `ws_pitches`~~ **Won't do: no more bundled datasets** (Matt, 2026-09-24). Football play-by-play (run = tuba, completed pass = harp, …) will be Matt's own example in the blog post announcing the package.
 - [ ] Piano-roll `autoplot()` / the `plot =` route for `sonify_video()`.
 
 ### Phase 4 — Distributions (§2.3)
 - [ ] `sonify_histogram()` with `bins`, `binwidth`, and `weight`; count → volume/density.
-- [ ] `sonify_density()`. Bundle `ne_housing_age`, and write the "Hearing distributions" vignette.
+- [ ] `sonify_density()` and a "Hearing distributions" vignette. **No bundled `ne_housing_age`** (no more bundled data): fetch ACS B25034 with tidycensus in the vignette (`eval = FALSE` or cached), or use a small made-up example.
 
 ### Phase 5 — Polish & teaching
-- [ ] Drums/percussion mapping, panning.
+- [ ] Panning (stereo position per voice). ~~Drums/percussion~~ dropped (see Phase 3).
 - [x] `sonify_video()` **built 2026-09-23** (`R/video.R`, `tests/testthat/test-video.R`), pulled forward from Phase 5. Two layouts: with `sequence`, one row per group in play order, first on top, with a highlight band and playhead tile mapped through the data (the fix for the mirrored-row bug); without `sequence`, pitch value vs time value (Dates/POSIXct/difftime OK) or row order, with a vertical playhead. Arguments: `title`, `subtitle`, `caption`, `x_label`, `y_label`, `theme`, `title_position` ("plot" default, re-applied even after a complete theme; "panel" opts out), point/playhead/highlight colors, `width`/`height` (1280×720), `fps` (12). Renders at about real time (35 s of luge ≈ 34 s to draw); a cli progress bar shows frames. Tests check, for **every** group, that the built highlight and playhead y equal that group's dots' y. Needs ggplot2 + av (Suggests). `sonify_data()` now also stores mapping labels in `settings$labels` and a `time_value` column in the notes. Original design notes:
   - Signature sketch: `sonify_video(x, path, theme = NULL, title = NULL, subtitle = NULL, caption = NULL, width = 1280, height = 640, fps = 12)`.
   - **`theme =` takes any ggplot2 theme**, complete (`theme_minimal()`, `ggthemes::theme_fivethirtyeight()`, a student's own) or partial (`theme(plot.title = element_text(size = 20))`). It's added *last* with `+`, so it overrides the defaults, and a complete theme replaces everything. It should work exactly like adding a theme to a ggplot, so students reuse what they know.
@@ -427,3 +427,4 @@ Add an entry per work session: date, what was done, decisions made, and what's n
 - **2026-09-23 (later)** — Built `sonify_video()` while Matt edited the vignette (I didn't touch `vignettes/`; commits stage files by name, never `git add -A`). 200 tests. `R CMD check` (vignettes skipped) is clean apart from the network-time NOTE. The README video (`spike/out/luge_readme.mp4`) is now made by `sonify_video()` itself. **Next:** the `plot =` argument; mention `sonify_video()` in the vignette/README once Matt's edits land.
 - **2026-09-24** — Pulled Matt's README edits. Built voices (Phase 3), both routes, with per-voice video colors. Decisions: no drums; no more bundled data (football is Matt's blog-post example); unlisted voices play the piano with a message. **Next:** `duration =`; the `plot =` route / piano-roll `autoplot()`; mention voices and `sonify_video()` in the vignette/README (Matt's call); Phase 4 distributions.
 - **2026-09-24 (later)** — Matt asked me to update the vignette myself (he'll edit later, building on it). Added "More than one voice" (two scores on a shared scale, citing the 58-56 Michigan State and 90-55 Oregon games; `voice = result` with W = marimba, L = cello, noting the redundant encoding), "Making a video" (`sonify_video()` examples with `eval = FALSE`, themes, flush-left titles), and two new exercises. The vignette renders to 3.3 MB with 11 players.
+- **2026-09-24 (later)** — Cleaned up stale plan items: viewer check done, drums dropped, ws_pitches won't happen, and distributions won't bundle data (fetch with tidycensus or make up an example). Built `duration =` plus `duration_range`. Gotcha: my first "is it a typed number?" test treated `duration = len` (an R variable) as a column mapping; the rule is now "mentions no data column". 272 tests.

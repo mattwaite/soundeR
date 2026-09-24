@@ -9,6 +9,7 @@ sonify_data(
   pitch = NULL,
   time = NULL,
   volume = NULL,
+  duration = NULL,
   sequence = NULL,
   voice = NULL,
   instrument = "piano",
@@ -19,6 +20,7 @@ sonify_data(
   scale = "pentatonic",
   key = "C",
   range = c("C3", "C6"),
+  duration_range = c(0.1, 1.5),
   reverse = FALSE,
   engine = c("auto", "synth", "fluidsynth"),
   force = FALSE
@@ -35,6 +37,12 @@ once, one voice each.}
 \item{time}{Optional. A column that decides when each note plays.}
 
 \item{volume}{Optional. A column to map to loudness. Bigger is louder.}
+
+\item{duration}{Optional. How long each note lasts. A number, like
+\code{duration = 0.2}, sets every note to that many seconds. A column makes
+bigger values longer notes, spread across \code{duration_range}. A column of
+durations (like \code{end - start}) plays in real time, times \code{time_scale} if
+you set it.}
 
 \item{sequence}{Optional. A column of groups to play one after another.}
 
@@ -62,6 +70,9 @@ instruments play the nearest semitone.}
 \item{key}{The key of the scale, like \code{"C"}, \code{"G"} or \code{"Bb"}.}
 
 \item{range}{The lowest and highest notes to use, like \code{c("C3", "C6")}.}
+
+\item{duration_range}{The shortest and longest notes, in seconds, when
+\code{duration} is a column of numbers or categories.}
 
 \item{reverse}{If \code{TRUE}, bigger numbers become lower notes.}
 

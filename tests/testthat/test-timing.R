@@ -60,3 +60,32 @@ test_that("long sonifications warn, very long ones stop", {
   expect_warning(check_total_length(1500, TRUE), "minutes")
   expect_silent(check_total_length(60, FALSE))
 })
+
+test_that("durations map from numbers, categories and real lengths of time", {
+  expect_equal(map_duration(0.2, TRUE, c(0.1, 1.5)), 0.2)
+  expect_error(map_duration(-1, TRUE, c(0.1, 1.5)), "positive")
+  expect_equal(map_duration(c(0, 5, 10), FALSE, c(0.1, 1.1)), c(0.1, 0.6, 1.1))
+  expect_equal(map_duration(c(3, 3), FALSE, c(0.1, 1.1)), c(0.6, 0.6))
+  expect_equal(map_duration(c("b", "a", "c"), FALSE, c(0.1, 1.1)), c(0.6, 0.1, 1.1))
+  real <- as.difftime(c(0.5, 2), units = "secs")
+  expect_equal(map_duration(real, FALSE, c(0.1, 1.1)), c(0.5, 2))
+  expect_equal(map_duration(real, FALSE, c(0.1, 1.1), time_scale = 2), c(1, 4))
+  expect_equal(map_duration(as.difftime(1, units = "mins"), FALSE, c(0.1, 1.1)), 60)
+  expect_error(map_duration(Sys.Date(), FALSE, c(0.1, 1.1)), "not dates")
+  expect_error(check_duration_range(c(2, 1)), "shortest first")
+  expect_error(check_duration_range(c(0, 1)), "positive")
+})
+
+test_that("long notes push the next sequence group back", {
+  t <- compute_timing(3, sequence = c("a", "a", "b"), bpm = 60, gap = 1,
+                      note_duration = c(0.5, 2, 0.5))
+  # group a's last note starts at 1 and lasts 2, so b starts at 1 + 2 + 1 gap
+  expect_equal(t$onset, c(0, 1, 4))
+  expect_equal(t$duration, c(0.5, 2, 0.5))
+  expect_equal(t$total, 4.5)
+})
+
+test_that("missing durations fall back to the default length", {
+  t <- compute_timing(2, bpm = 120, note_duration = c(1, NA))
+  expect_equal(t$duration, c(1, 0.5))
+})

@@ -145,3 +145,33 @@ test_that("missing values in one pitch column only silence that voice", {
   expect_message(s <- sonify_data(d, c(a, b), instrument = "sine"), "1 note with a missing pitch")
   expect_equal(nrow(notes(s)), 5)
 })
+
+test_that("duration sets how long notes last", {
+  d <- data.frame(x = c(1, 5, 3), len = c(1, 10, 4), kind = c("a", "b", "a"))
+  expect_equal(notes(sonify_data(d, x, duration = 0.2, instrument = "sine"))$duration, rep(0.2, 3))
+  expect_equal(notes(sonify_data(d, x, duration = 1/4, instrument = "sine"))$duration, rep(0.25, 3))
+  note_len <- 0.3
+  expect_equal(notes(sonify_data(d, x, duration = note_len, instrument = "sine"))$duration, rep(0.3, 3))
+  n <- notes(sonify_data(d, x, duration = len, instrument = "sine"))
+  expect_equal(n$duration[c(1, 2)], c(0.1, 1.5))
+  n <- notes(sonify_data(d, x, duration = len, duration_range = c(0.2, 0.4), instrument = "sine"))
+  expect_equal(range(n$duration), c(0.2, 0.4))
+  expect_equal(notes(sonify_data(d, x, duration = kind, instrument = "sine"))$duration, c(0.1, 1.5, 0.1))
+  expect_error(sonify_data(d, x, duration = -1), "positive number")
+  s <- sonify_data(d, x, duration = len, instrument = "sine")
+  expect_equal(s$settings$labels$duration, "len")
+  expect_equal(s$settings$total, max(notes(s)$onset + notes(s)$duration))
+})
+
+test_that("durations apply to every voice of a row", {
+  d <- data.frame(a = 1:2, b = 2:1, len = c(1, 2))
+  n <- notes(sonify_data(d, c(a, b), duration = len, instrument = "sine"))
+  expect_equal(n$duration, c(0.1, 0.1, 1.5, 1.5))
+})
+
+test_that("missing durations get the default length, with a message", {
+  d <- data.frame(x = 1:3, len = c(1, NA, 3))
+  expect_message(s <- sonify_data(d, x, duration = len, instrument = "sine"), "missing duration")
+  expect_equal(nrow(notes(s)), 3)
+  expect_equal(notes(s)$duration[2], 0.5)
+})

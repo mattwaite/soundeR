@@ -185,6 +185,16 @@ husker_games |>
   sonify_data(point_margin, volume = game_type, instrument = "xylophone", bpm = 180)
 ```
 
+`duration` sets how long each note rings. A number sets every note to that
+many seconds, so `duration = 0.1` makes short, crisp notes that are easier
+to tell apart at a fast tempo. A column works too: bigger values ring
+longer.
+
+```{r}
+husker_games |>
+  sonify_data(point_margin, duration = 0.1, instrument = "xylophone", bpm = 180)
+```
+
 And instead of one note per row, `time = date` places each game on the
 calendar. `length = 20` fits the whole season into 20 seconds. Listen for
 the gaps: the break around Christmas, and the waits between tournament
