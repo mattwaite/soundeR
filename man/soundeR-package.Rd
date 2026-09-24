@@ -11,7 +11,7 @@ A beginner-friendly, tidyverse-style interface for data sonification: map column
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://mattwaite.github.io/soundeR/}
+  \item \url{https://www.mattwaite.com/soundeR/}
   \item \url{https://github.com/mattwaite/soundeR}
   \item Report bugs at \url{https://github.com/mattwaite/soundeR/issues}
 }

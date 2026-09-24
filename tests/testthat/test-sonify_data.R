@@ -175,3 +175,37 @@ test_that("missing durations get the default length, with a message", {
   expect_equal(nrow(notes(s)), 3)
   expect_equal(notes(s)$duration[2], 0.5)
 })
+
+test_that("real instruments default to their usual range", {
+  d <- data.frame(x = c(1, 5, 10))
+  cello <- sonify_data(d, x, instrument = "cello")
+  expect_equal(cello$settings$range, c("C2", "C5"))
+  expect_equal(range(notes(cello)$midi), note_to_midi(c("C2", "C5")))
+  expect_equal(sonify_data(d, x, instrument = "tuba")$settings$range, c("D1", "D4"))
+  expect_equal(sonify_data(d, x, instrument = "bell")$settings$range, c("C3", "C6"))
+  # Your own range always wins.
+  expect_equal(sonify_data(d, x, instrument = "tuba", range = c("C4", "C6"))$settings$range, c("C4", "C6"))
+})
+
+test_that("several instruments share the range they have in common", {
+  d <- data.frame(a = c(1, 5), b = c(5, 10))
+  s <- sonify_data(d, c(a, b), instrument = c("marimba", "cello"))
+  expect_equal(s$settings$range, c("C3", "C5"))
+  # Built-in sounds don't narrow it.
+  s <- sonify_data(d, c(a, b), instrument = c("bell", "cello"))
+  expect_equal(s$settings$range, c("C2", "C5"))
+})
+
+test_that("instruments with little range in common fall back to C3-C6, with a message", {
+  rlang::local_options(rlib_message_verbosity = "verbose")
+  d <- data.frame(a = c(1, 5), b = c(5, 10))
+  expect_message(s <- sonify_data(d, c(a, b), instrument = c("piccolo", "tuba")), "little pitch range")
+  expect_equal(s$settings$range, c("C3", "C6"))
+})
+
+test_that("instruments() lists each instrument's range", {
+  i <- instruments()
+  expect_true(all(c("low", "high") %in% names(i)))
+  expect_equal(unlist(i[i$name == "cello", c("low", "high")], use.names = FALSE), c("C2", "C5"))
+  expect_true(all(note_to_midi(i$high) - note_to_midi(i$low) >= 12))
+})

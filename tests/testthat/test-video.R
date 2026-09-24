@@ -10,6 +10,8 @@ style <- list(point_color = "black", playhead_color = "red", highlight_color = "
 
 # Built positions of each layer: 1 = highlight band, 2 = dots, 3 = playhead.
 built_layers <- function(p) ggplot2::ggplot_build(p)$data
+# Sequence frames: 1 = highlight band, 2 = all dots, 3 = hollow dots still
+# to play, 4 = playhead. Other frames have no band.
 
 test_that("the highlight and playhead land on the row that's playing, for every group", {
   layout <- video_layout(race_s)
@@ -20,7 +22,7 @@ test_that("the highlight and playhead land on the row that's playing, for every 
     d <- built_layers(video_frame(layout, mid, style))
     dots_y <- unique(d[[2]]$y[layout$notes$group == g])
     expect_equal(d[[1]]$y, dots_y, info = g)
-    expect_equal(d[[3]]$y, dots_y, info = g)
+    expect_equal(d[[4]]$y, dots_y, info = g)
   }
 })
 
@@ -40,9 +42,15 @@ test_that("groups are ordered by when they play, not row order", {
 
 test_that("dots fill in as their notes play", {
   layout <- video_layout(race_s)
-  d <- built_layers(video_frame(layout, 0.25, style))
-  played <- d[[2]]$fill == "black"
-  expect_equal(played, layout$notes$onset <= 0.25)
+  for (t in c(0, 0.25, 1.9)) {
+    d <- built_layers(video_frame(layout, t, style))
+    expect_true(all(d[[2]]$fill == "black"))
+    # Notes still to play are covered by hollow dots in the same places.
+    waiting <- layout$notes$onset > t + 1e-9
+    expect_equal(nrow(d[[3]]), sum(waiting), info = t)
+    expect_equal(d[[3]]$x, layout$notes$x[waiting], info = t)
+    expect_true(all(d[[3]]$fill == "white"))
+  }
 })
 
 test_that("the playhead follows the data's x units between notes", {
@@ -104,12 +112,13 @@ test_that("each voice gets its own color, and played dots fill with it", {
   layout <- video_layout(s)
   st <- style
   st$point_color <- NULL
-  d <- built_layers(video_frame(layout, 0.6, st))[[2]]
+  built <- built_layers(video_frame(layout, 0.6, st))
   colors <- voice_colors(c("run", "pass", "incomplete"))
-  expect_equal(d$colour, unname(colors[notes(s)$voice]))
-  played <- notes(s)$onset <= 0.6
-  expect_equal(d$fill[played], unname(colors[notes(s)$voice[played]]))
-  expect_true(all(d$fill[!played] == "white"))
+  expect_equal(built[[1]]$colour, unname(colors[notes(s)$voice]))
+  expect_equal(built[[1]]$fill, unname(colors[notes(s)$voice]))
+  waiting <- notes(s)$onset > 0.6
+  expect_equal(built[[2]]$colour, unname(colors[notes(s)$voice[waiting]]))
+  expect_true(all(built[[2]]$fill == "white"))
 })
 
 test_that("voice colors can be set in order or by name", {
@@ -148,4 +157,53 @@ test_that("the axes never change from frame to frame, in every layout", {
   expect_equal(axis_ranges(race_s), 1)
   scores <- data.frame(ours = c(70, 81, 64), theirs = c(65, 84, 60))
   expect_equal(axis_ranges(sonify_data(scores, c(ours, theirs), instrument = "sine")), 1)
+})
+
+test_that("sonify_plot() draws the finished chart as a ggplot", {
+  p <- sonify_plot(race_s, title = "Race")
+  expect_s3_class(p, "ggplot")
+  expect_false(is.null(attr(p, "soundeR_layout")))
+  d <- built_layers(p)
+  expect_length(d, 1)
+  expect_equal(nrow(d[[1]]), nrow(notes(race_s)))
+  expect_equal(p$labels$title %||% ggplot2::get_labs(p)$title, "Race")
+  expect_equal(p$theme$plot.title.position, "plot")
+})
+
+test_that("frames keep everything added to a sonify_plot()", {
+  layout <- video_layout(race_s)
+  p <- sonify_plot(race_s) +
+    ggplot2::labs(title = "Custom") +
+    ggplot2::annotate("text", x = 0.3, y = "second", label = "note this") +
+    ggplot2::theme(plot.title = ggplot2::element_text(size = 30))
+  st <- list(colors = voice_colors(NULL), playhead_color = "red", highlight_color = "tan")
+  n <- notes(race_s)
+  for (g in layout$groups) {
+    frame <- add_frame_layers(p, layout, mean(range(n$onset[n$sequence == g])), st)
+    d <- built_layers(frame)
+    expect_equal(frame$theme$plot.title$size, 30)
+    expect_true(any(vapply(d, function(l) "label" %in% names(l), logical(1))))
+    # The band goes underneath everything and still lands on the playing row.
+    dots_y <- unique(d[[2]]$y[layout$notes$group == g])
+    expect_equal(d[[1]]$y, dots_y, info = g)
+  }
+})
+
+test_that("sonify_video() only takes plots from sonify_plot() of the same sonification", {
+  other <- sonify_data(data.frame(x = 1:3), x, instrument = "sine")
+  expect_error(sonify_video(race_s, "a.mp4", plot = ggplot2::ggplot()), "sonify_plot")
+  expect_error(sonify_video(race_s, "a.mp4", plot = sonify_plot(other)), "different sonification")
+  expect_error(sonify_plot(race_s, theme = "dark"), "ggplot2 theme")
+})
+
+test_that("sonify_video() uses a customized plot", {
+  skip_if_not_installed("av")
+  skip_on_cran()
+  path <- withr::local_tempfile(fileext = ".mp4")
+  p <- sonify_plot(race_s) + ggplot2::labs(title = "Mine")
+  expect_warning(
+    suppressMessages(sonify_video(race_s, path, plot = p, point_color = "red", width = 320, height = 180, fps = 4)),
+    "ignored"
+  )
+  expect_equal(av::av_media_info(path)$video$width, 320)
 })

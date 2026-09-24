@@ -41,6 +41,65 @@ gm_family <- rep(c(
   "synth effects", "ethnic", "percussive", "sound effects"
 ), each = 8)
 
+# A comfortable pitch range for each GM program: typical orchestral and band
+# ranges, rounded, and trimmed to the part of the range that sounds good
+# (about two and a half to three octaves). Family defaults first, then
+# instruments that differ.
+gm_family_range <- c(
+  "piano" = "C3-C6", "chromatic percussion" = "C4-C7", "organ" = "C3-C6",
+  "guitar" = "E2-E5", "bass" = "E1-G3", "strings" = "C3-C6", "ensemble" = "C3-C6",
+  "brass" = "C3-C6", "reed" = "C3-C6", "pipe" = "C4-C7", "synth lead" = "C3-C6",
+  "synth pad" = "C3-C6", "synth effects" = "C3-C6", "ethnic" = "C3-C6",
+  "percussive" = "C3-C6", "sound effects" = "C3-C6"
+)
+gm_range_overrides <- c(
+  "glockenspiel" = "C5-C8", "vibraphone" = "F3-F6", "marimba" = "C3-C6",
+  "tubular bells" = "C4-G5", "dulcimer" = "C3-C6", "harmonica" = "C4-C7",
+  "violin" = "G3-G6", "viola" = "C3-C6", "cello" = "C2-C5", "contrabass" = "E1-E3",
+  "harp" = "C3-C6", "timpani" = "D2-C4",
+  "trumpet" = "G3-C6", "trombone" = "E2-E5", "tuba" = "D1-D4", "muted trumpet" = "G3-C6",
+  "french horn" = "F2-F5",
+  "soprano sax" = "A3-D6", "alto sax" = "C#3-A5", "tenor sax" = "G#2-E5",
+  "baritone sax" = "C#2-A4", "oboe" = "C4-G6", "english horn" = "E3-C6",
+  "bassoon" = "A#1-C5", "clarinet" = "E3-G6",
+  "piccolo" = "D5-C8", "recorder" = "C5-C7", "whistle" = "D5-D7",
+  "blown bottle" = "C4-C6", "shakuhachi" = "C4-C6", "ocarina" = "C4-C6",
+  "banjo" = "D3-D6", "kalimba" = "C4-E6", "bagpipe" = "C4-C6", "fiddle" = "G3-G6",
+  "shanai" = "C4-C6", "tinkle bell" = "C5-C8", "agogo" = "C4-C6",
+  "steel drums" = "C4-E6", "woodblock" = "C4-C6", "taiko drum" = "C3-C5",
+  "melodic tom" = "C3-C5", "synth drum" = "C3-C5"
+)
+
+# c(low, high) MIDI numbers for a resolved instrument.
+instrument_range <- function(inst) {
+  spec <- if (inst$type == "synth") {
+    "C3-C6"
+  } else {
+    name <- gm_names[inst$program + 1]
+    if (name %in% names(gm_range_overrides)) gm_range_overrides[[name]] else gm_family_range[[gm_family[inst$program + 1]]]
+  }
+  note_to_midi(strsplit(spec, "-", fixed = TRUE)[[1]])
+}
+
+# The default pitch range for a set of instruments: an instrument's own range,
+# or, for several, the part they share (so equal values stay equal notes
+# across voices). If they share less than an octave and a half, C3 to C6.
+default_range <- function(insts) {
+  real <- Filter(function(i) i$type == "gm", insts)
+  if (length(real) == 0) return(note_to_midi(c("C3", "C6")))
+  ranges <- lapply(real, instrument_range)
+  lo <- max(vapply(ranges, `[`, integer(1), 1))
+  hi <- min(vapply(ranges, `[`, integer(1), 2))
+  if (hi - lo >= 18) return(c(lo, hi))
+  names <- unique(vapply(real, `[[`, character(1), "name"))
+  cli::cli_inform(
+    c("i" = "{.val {names}} have little pitch range in common, so they share C3 to C6.",
+      " " = "Set {.arg range} to choose, like {.code range = c(\"C3\", \"C5\")}."),
+    .frequency = "regularly", .frequency_id = paste0("soundeR_range_", paste(sort(names), collapse = "_"))
+  )
+  note_to_midi(c("C3", "C6"))
+}
+
 # Short, friendly names that point at a GM program.
 gm_aliases <- c(
   "piano" = 0, "grand piano" = 0, "electric piano" = 4, "organ" = 16,
@@ -72,7 +131,9 @@ synth_standin <- function(program) {
 #' @param family Optionally, only list instruments in this family, such as
 #'   `"brass"` or `"chromatic percussion"`.
 #' @return A tibble with the instrument `name`, its `family`, which `engine`
-#'   plays it, and its General MIDI `program` number (0-based).
+#'   plays it, its General MIDI `program` number (0-based), and the `low` and
+#'   `high` notes of its usual range. Notes stay in that range unless you set
+#'   `range` yourself.
 #' @export
 #' @examples
 #' instruments()
@@ -84,6 +145,10 @@ instruments <- function(family = NULL) {
     engine = c(rep("synth", length(synth_names)), rep("fluidsynth", 128)),
     program = c(rep(NA_integer_, length(synth_names)), 0:127)
   )
+  ranges <- lapply(c(lapply(synth_names, function(n) list(type = "synth")),
+                     lapply(0:127, function(p) list(type = "gm", program = p))), instrument_range)
+  out$low <- midi_to_note(vapply(ranges, `[`, integer(1), 1))
+  out$high <- midi_to_note(vapply(ranges, `[`, integer(1), 2))
   if (!is.null(family)) out <- out[out$family %in% tolower(family), ]
   out
 }

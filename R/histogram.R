@@ -50,7 +50,7 @@
 sonify_histogram <- function(data, x, weight = NULL, bins = NULL, binwidth = NULL,
                              instrument = "piano", length = 20, bpm = NULL,
                              log = FALSE, pan = FALSE, scale = "pentatonic", key = "C",
-                             range = c("C3", "C6"), engine = c("auto", "synth", "fluidsynth"),
+                             range = NULL, engine = c("auto", "synth", "fluidsynth"),
                              force = FALSE) {
   if (!is.data.frame(data)) {
     cli::cli_abort("{.arg data} must be a data frame, not {.obj_type_friendly {data}}.")

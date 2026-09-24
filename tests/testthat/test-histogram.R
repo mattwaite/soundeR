@@ -105,7 +105,10 @@ test_that("the video draws bars that fill as the sweep reaches them", {
     bars <- d_built[[1]]
     expect_equal(bars$xmin, c(0, 30))
     expect_equal(bars$ymax, c(3, 2))
-    expect_equal(bars$fill == "navy", notes(s)$onset <= t, info = t)
+    expect_true(all(bars$fill == "navy"))
+    # Bars still to play are covered in gray.
+    gray <- d_built[[2]]
+    expect_equal(gray$xmin %||% numeric(0), notes(s)$bin_start[notes(s)$onset > t + 1e-9], info = t)
   }
   # The playhead reaches each bar's left edge as its note starts.
   expect_equal(playhead_x(layout$head_onset, layout$head_x, 3), 30)

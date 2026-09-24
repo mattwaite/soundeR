@@ -83,7 +83,10 @@ test_that("the video fills the curve up to the playhead", {
   expect_equal(playhead_x(layout$head_onset, layout$head_x, 2), max(n$x_value))
   st <- list(point_color = "navy", playhead_color = "red", highlight_color = "tan", title_position = "plot")
   built <- ggplot2::ggplot_build(video_frame(layout, 1, st))$data
-  played <- built[[2]]
-  expect_equal(unique(played$fill), "navy")
-  expect_equal(max(played$x), playhead_x(layout$head_onset, layout$head_x, 1), tolerance = 1e-6)
+  expect_equal(unique(built[[1]]$fill), "navy")
+  # Layers: 1 = colored area, 2 = line, 3 = gray area still to come, 4 = line
+  # again on top, 5 = playhead. The gray part starts exactly at the playhead.
+  ahead <- built[[3]]
+  expect_equal(unique(ahead$fill), "#e3e3e3")
+  expect_equal(min(ahead$x), playhead_x(layout$head_onset, layout$head_x, 1), tolerance = 1e-6)
 })

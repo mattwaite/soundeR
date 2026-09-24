@@ -12,7 +12,9 @@ instruments(family = NULL)
 }
 \value{
 A tibble with the instrument \code{name}, its \code{family}, which \code{engine}
-plays it, and its General MIDI \code{program} number (0-based).
+plays it, its General MIDI \code{program} number (0-based), and the \code{low} and
+\code{high} notes of its usual range. Notes stay in that range unless you set
+\code{range} yourself.
 }
 \description{
 Built-in synth sounds (\code{"sine"}, \code{"triangle"}, \code{"square"}, \code{"bell"},

@@ -7,6 +7,7 @@
 sonify_video(
   x,
   path,
+  plot = NULL,
   title = NULL,
   subtitle = NULL,
   caption = NULL,
@@ -23,23 +24,30 @@ sonify_video(
 )
 }
 \arguments{
-\item{x}{A sonification made by \code{\link[=sonify_data]{sonify_data()}}.}
+\item{x}{A sonification made by \code{\link[=sonify_data]{sonify_data()}}, \code{\link[=sonify_histogram]{sonify_histogram()}} or
+\code{\link[=sonify_density]{sonify_density()}}.}
 
 \item{path}{Where to save the video. Must end in \code{.mp4}.}
+
+\item{plot}{Optional. A chart made with \code{\link[=sonify_plot]{sonify_plot()}} from this same
+sonification, customized however you like.}
 
 \item{title, subtitle, caption}{Optional text for the chart.}
 
 \item{x_label, y_label}{Axis labels. By default, the names of the columns you
 mapped.}
 
-\item{theme}{Optional. A ggplot2 theme to change how the chart looks.}
+\item{theme}{Optional. A ggplot2 theme, complete (like
+\code{ggplot2::theme_classic()}) or partial (like
+\code{ggplot2::theme(plot.title = ggplot2::element_text(size = 24))}). It's
+added last, so it overrides soundeR's defaults.}
 
 \item{title_position}{\code{"plot"} (the default) lines titles and captions up
 with the whole image; \code{"panel"} lines them up with the plot panel.}
 
-\item{point_color}{Color for the dots. With more than one voice, one color
-per voice, in order or named by voice; by default each voice gets its
-own color from a colorblind-friendly palette.}
+\item{point_color}{Color for the dots (or bars, or curve). With more than
+one voice, one color per voice, in order or named by voice; by default
+each voice gets its own color from a colorblind-friendly palette.}
 
 \item{playhead_color, highlight_color}{Colors for the moving playhead and
 the band behind the row that's playing.}
@@ -53,31 +61,14 @@ the band behind the row that's playing.}
 }
 \description{
 \code{sonify_video()} makes an MP4 video of your sonification: a chart of the
-data, with a playhead that moves across it and dots that fill in as each
+data, with a playhead that moves across it and marks that fill in as each
 note plays, and the sound as the soundtrack. Videos are handy where audio
 players aren't allowed, like a GitHub README, social media or slides.
 }
 \details{
-The chart depends on how you made the sonification:
-\itemize{
-\item From \code{\link[=sonify_histogram]{sonify_histogram()}}, a histogram whose bars fill in as the sweep
-passes them. From \code{\link[=sonify_density]{sonify_density()}}, a curve that fills in the same way.
-\item With \code{sequence}, each group gets its own row, like the New York Times's
-2010 Olympic Musical. The row that's playing is highlighted.
-\item Without \code{sequence}, the chart plots \code{pitch} (up the side) against \code{time}
-or row order (along the bottom).
-}
-\subsection{Changing the look}{
-
-\code{theme} accepts any ggplot2 theme, just like adding one to a ggplot: a
-complete theme such as \code{ggplot2::theme_classic()}, or a few changes such
-as \code{ggplot2::theme(plot.title = ggplot2::element_text(size = 24))}. It's
-added last, so it overrides soundeR's defaults.
-
-Titles and captions line up with the edge of the whole image, not the
-plot panel (\code{plot.title.position = "plot"}), even with a complete theme.
-Use \code{title_position = "panel"} for ggplot2's default.
-}
+The chart is the one \code{\link[=sonify_plot]{sonify_plot()}} draws. To change more than the
+title, labels and theme, build it yourself with \code{sonify_plot()}, add to it
+like any ggplot, and pass it in with \verb{plot =}.
 }
 \examples{
 \dontrun{

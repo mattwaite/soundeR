@@ -17,7 +17,7 @@ sonify_histogram(
   pan = FALSE,
   scale = "pentatonic",
   key = "C",
-  range = c("C3", "C6"),
+  range = NULL,
   engine = c("auto", "synth", "fluidsynth"),
   force = FALSE
 )
@@ -59,7 +59,9 @@ instruments play the nearest semitone.}
 
 \item{key}{The key of the scale, like \code{"C"}, \code{"G"} or \code{"Bb"}.}
 
-\item{range}{The lowest and highest notes to use, like \code{c("C3", "C6")}.}
+\item{range}{The lowest and highest notes to use, like \code{c("C3", "C6")}. By
+default, the usual range of the instrument (see \code{\link[=instruments]{instruments()}}), or the
+range several instruments share. Built-in sounds use C3 to C6.}
 
 \item{engine}{How to make the sound. \code{"auto"} uses real instruments when
 the fluidsynth package and a soundfont are available, and the built-in

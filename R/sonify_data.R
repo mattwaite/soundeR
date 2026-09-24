@@ -68,7 +68,9 @@
 #'   `"none"`, the built-in synth plays exact frequencies, but real
 #'   instruments play the nearest semitone.
 #' @param key The key of the scale, like `"C"`, `"G"` or `"Bb"`.
-#' @param range The lowest and highest notes to use, like `c("C3", "C6")`.
+#' @param range The lowest and highest notes to use, like `c("C3", "C6")`. By
+#'   default, the usual range of the instrument (see [instruments()]), or the
+#'   range several instruments share. Built-in sounds use C3 to C6.
 #' @param pan Optional. Where each note sits between your left and right
 #'   speakers. A number from -1 (left) to 1 (right), or `"left"`, `"center"`
 #'   or `"right"`, places every note. A column spreads bigger values to the
@@ -113,7 +115,7 @@ sonify_data <- function(data, pitch = NULL, time = NULL, volume = NULL,
                         duration = NULL, pan = NULL, sequence = NULL, voice = NULL,
                         instrument = "piano", bpm = 120,
                         length = NULL, time_scale = NULL, gap = 1,
-                        scale = "pentatonic", key = "C", range = c("C3", "C6"),
+                        scale = "pentatonic", key = "C", range = NULL,
                         duration_range = c(0.1, 1.5),
                         reverse = FALSE, engine = c("auto", "synth", "fluidsynth"),
                         force = FALSE) {
@@ -138,7 +140,7 @@ sonify_data <- function(data, pitch = NULL, time = NULL, volume = NULL,
   engine <- rlang::arg_match(engine)
   scale <- check_scale(scale)
   key_pc <- key_to_pc(key)
-  range_midi <- range_to_midi(range)
+  if (!is.null(range)) range_midi <- range_to_midi(range)
   check_duration_range(duration_range)
   check_timing_args(
     time_given = !rlang::quo_is_null(q_time), time_scale = time_scale,
@@ -187,6 +189,7 @@ sonify_data <- function(data, pitch = NULL, time = NULL, volume = NULL,
     voice_vals <- ifelse(is.na(voice_vals), "(missing)", as.character(voice_vals))
   }
   insts <- resolve_voice_instruments(instrument, voice_levels)
+  if (is.null(range)) range_midi <- default_range(insts)
 
   timing <- compute_timing(
     n, time = time_vals, sequence = sequence_vals, bpm = bpm, length = length,
@@ -263,7 +266,7 @@ sonify_data <- function(data, pitch = NULL, time = NULL, volume = NULL,
     settings = list(
       instruments = insts, voices = voice_levels, engine = engine, bpm = bpm, length = length,
       time_scale = time_scale, gap = gap, scale = scale, key = key,
-      range = range, duration_range = duration_range, reverse = reverse, total = total,
+      range = midi_to_note(range_midi), duration_range = duration_range, reverse = reverse, total = total,
       labels = list(
         pitch = if (length(pitch_qs)) names(pitch_qs), time = mapping_label(q_time),
         volume = mapping_label(q_volume), duration = mapping_label(q_duration),

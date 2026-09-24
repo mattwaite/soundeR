@@ -20,6 +20,7 @@ reference:
   - sonify_density
 - title: See, save and inspect
   contents:
+  - sonify_plot
   - sonify_video
   - save_sound
   - notes

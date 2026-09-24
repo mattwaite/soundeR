@@ -44,7 +44,7 @@
 sonify_density <- function(data, x, weight = NULL, adjust = 1, glide = TRUE,
                            instrument = if (glide) "triangle" else "piano",
                            length = 10, points = 120, scale = "pentatonic",
-                           key = "C", range = c("C3", "C6"), pan = FALSE,
+                           key = "C", range = NULL, pan = FALSE,
                            engine = c("auto", "synth", "fluidsynth")) {
   if (!is.data.frame(data)) {
     cli::cli_abort("{.arg data} must be a data frame, not {.obj_type_friendly {data}}.")
