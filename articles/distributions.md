@@ -1,0 +1,266 @@
+# Hearing distributions
+
+[`sonify_data()`](https://mattwaite.github.io/soundeR/reference/sonify_data.md)
+plays rows in order, which works when the order means something: games
+in a season, sleds crossing a finish line. But a lot of data isn’t a
+sequence. For the ages of houses in a state, the order of the rows is
+arbitrary. What matters is the **distribution**: how many houses there
+are of each age.
+
+A histogram shows a distribution by sorting values into bins and drawing
+a bar for each one.
+[`sonify_histogram()`](https://mattwaite.github.io/soundeR/reference/sonify_histogram.md)
+does the same thing for your ears. It sweeps across the bins from lowest
+to highest, playing one note per bin. The more rows in a bin, the higher
+and louder the note. Empty bins are silent.
+
+``` r
+
+library(soundeR)
+library(dplyr)
+```
+
+## Houses in Nebraska
+
+`ne_house_years` counts the single-family houses in Nebraska by the year
+they were built, from parcel records. (About 13,000 parcels have no
+build year, so they aren’t here.)
+
+``` r
+
+ne_house_years
+#> # A tibble: 182 × 2
+#>    year_built houses
+#>         <int>  <int>
+#>  1       1800      4
+#>  2       1820      1
+#>  3       1821      1
+#>  4       1840      2
+#>  5       1848      1
+#>  6       1849      2
+#>  7       1850     10
+#>  8       1851      1
+#>  9       1853      1
+#> 10       1854      3
+#> # ℹ 172 more rows
+```
+
+The data is already counted, one row per year, so the counts go to
+`weight`. (With raw data, one row per house, you’d leave `weight` out.)
+Let’s start with one bin per decade:
+
+``` r
+
+ne_house_years |>
+  sonify_histogram(year_built, weight = houses, binwidth = 10, instrument = "marimba")
+```
+
+The whole sweep takes 20 seconds, one note per decade. The 1800s start
+low and climb to a boom in the first decades of the 1900s. Then comes a
+sharp drop in the 1930s, the Depression, followed by a long rise after
+World War II that peaks in the 1970s, a dip in the 1980s, another peak
+in the 2000s, and a fall after the 2008 housing crash.
+
+[`notes()`](https://mattwaite.github.io/soundeR/reference/notes.md)
+shows each bin’s edges and count:
+
+``` r
+
+ne_house_years |>
+  sonify_histogram(year_built, weight = houses, binwidth = 10) |>
+  notes() |>
+  select(bin_start, bin_end, note, value)
+#> # A tibble: 21 × 4
+#>    bin_start bin_end note  value
+#>        <dbl>   <dbl> <chr> <dbl>
+#>  1      1800    1810 C3        4
+#>  2      1820    1830 C3        2
+#>  3      1840    1850 C3        5
+#>  4      1850    1860 C3       59
+#>  5      1860    1870 C3      216
+#>  6      1870    1880 C3     1066
+#>  7      1880    1890 D3     3721
+#>  8      1890    1900 E3     9940
+#>  9      1900    1910 E4    31752
+#> 10      1910    1920 A4    36364
+#> # ℹ 11 more rows
+```
+
+Each bin includes its start but not its end, so the 1900 bin covers 1900
+through 1909.
+
+## The bins change what you hear
+
+Here’s the same data with one bin per year:
+
+``` r
+
+ne_house_years |>
+  sonify_histogram(year_built, weight = houses, binwidth = 1, instrument = "marimba")
+```
+
+It sounds completely different. Through the late 1800s and early 1900s,
+jarring high notes jump out every five and ten years. Those are years
+like 1900, which has 19,205 houses, compared with 730 in 1901:
+
+``` r
+
+ne_house_years |>
+  filter(year_built >= 1898, year_built <= 1906)
+#> # A tibble: 9 × 2
+#>   year_built houses
+#>        <int>  <int>
+#> 1       1898   1010
+#> 2       1899    220
+#> 3       1900  19205
+#> 4       1901    730
+#> 5       1902    540
+#> 6       1903    816
+#> 7       1904    640
+#> 8       1905   4116
+#> 9       1906   1608
+```
+
+Did Nebraska really build 26 times as many houses in 1900 as in 1901?
+Before 1950, 42% of the houses in this data have a year ending in 0,
+where you’d expect about 10%. From 1980 on, the round-number spikes
+mostly disappear. A pattern that regular says something about how the
+years got into the records, not just about when houses went up. Why it
+happened isn’t documented yet. It’s the kind of question to take to the
+people who keep the data before you report a number like “19,205 houses
+built in 1900.”
+
+Neither version is wrong. Decade bins show the overall shape and hide
+the rounding. Year bins show the rounding and bury the shape. Picking a
+bin width is a choice, in sound just as in a chart, so try more than
+one.
+
+With `pan = TRUE`, the sound also travels from your left speaker to your
+right as the sweep moves across the years, so you can hear where you are
+along the axis. It works best with headphones:
+
+``` r
+
+ne_house_years |>
+  sonify_histogram(year_built, weight = houses, binwidth = 10, pan = TRUE, instrument = "marimba")
+```
+
+## A few big bins can drown out the rest
+
+When a handful of bins are far bigger than the others, most notes crowd
+together at the bottom of the range. `log = TRUE` bases pitch on the
+logarithm of the counts, which spreads out the small ones:
+
+``` r
+
+ne_house_years |>
+  sonify_histogram(year_built, weight = houses, binwidth = 1, log = TRUE, instrument = "marimba")
+```
+
+Now you can hear the handful of houses from the early 1800s rising
+toward the 1900s instead of sitting on one low note. The trade-off is
+that differences between big bins sound smaller than they are.
+
+## A smooth curve
+
+A histogram’s bins are all-or-nothing: a house built in 1909 counts
+toward one bar and a house built in 1910 toward the next. A density
+curve, like
+[`ggplot2::geom_density()`](https://ggplot2.tidyverse.org/reference/geom_density.html),
+smooths the distribution instead.
+[`sonify_density()`](https://mattwaite.github.io/soundeR/reference/sonify_density.md)
+plays that curve as one continuous tone that glides up where there are
+more houses and down where there are fewer:
+
+``` r
+
+ne_house_years |>
+  sonify_density(year_built, weight = houses, adjust = 4)
+```
+
+`adjust` sets how smooth the curve is, the same as in `geom_density()`.
+With `adjust = 4` you hear three rises: to a peak around 1916, a dip in
+the late 1930s, a long climb to about 1971, a sag around 1992, and a
+last peak around 2001. With the default of `adjust = 1`, the curve is
+detailed enough to wobble at 1901, 1910 and 1920, the round-number years
+again:
+
+``` r
+
+ne_house_years |>
+  sonify_density(year_built, weight = houses)
+```
+
+The glide uses soundeR’s built-in tones. To hear the curve on a real
+instrument, add `glide = FALSE`, which plays it as a quick run of notes:
+
+``` r
+
+ne_house_years |>
+  sonify_density(year_built, weight = houses, adjust = 4, glide = FALSE, instrument = "marimba")
+```
+
+## Watch the edges of your data
+
+The last two years in this data, 2025 and 2026, were only partly
+recorded when it was compiled: 408 houses and 1. Played as they are,
+they sound like the housing market fell off a cliff. Leaving out the
+incomplete years is more honest:
+
+``` r
+
+ne_house_years |>
+  filter(year_built < 2025) |>
+  sonify_histogram(year_built, weight = houses, binwidth = 5, instrument = "marimba")
+```
+
+## Raw data works too
+
+Without `weight`, every row counts once. Here’s how the Husker
+basketball margins were spread across the 2025-26 season, in five-point
+bins:
+
+``` r
+
+husker_games |>
+  sonify_histogram(point_margin, binwidth = 5, instrument = "xylophone", length = 10)
+```
+
+The sweep starts with the seven losses. They’re spread thin across the
+left side, with a silent gap where no game landed, so their notes are
+low: remember, pitch here is how many games fell in a bin, not how big
+the margin was. The notes climb for the most common results, wins by 0
+to 20 points, then scatter through the blowouts, including five wins by
+30 or more.
+
+## Seeing it
+
+[`sonify_video()`](https://mattwaite.github.io/soundeR/reference/sonify_video.md)
+draws a sonified histogram as a histogram, with bars that fill in as the
+sweep passes them. A density curve fills in the same way.
+
+``` r
+
+ne_house_years |>
+  sonify_histogram(year_built, weight = houses, binwidth = 1, instrument = "marimba") |>
+  sonify_video(
+    "house-years.mp4",
+    title = "Houses built in Nebraska, by year",
+    subtitle = "One bar per year. Listen for the round numbers.",
+    x_label = "Year built",
+    y_label = "Houses"
+  )
+```
+
+## Things to try
+
+- Try `binwidth = 5`. Do the round-number spikes go away, or just move?
+- Which do you trust more to describe housing in Nebraska, the year
+  version or the decade version? What would you tell a reader about
+  each?
+- Leave out the years before 1950 with
+  [`filter()`](https://dplyr.tidyverse.org/reference/filter.html). How
+  does the rest of the distribution sound without the round-number
+  years?
+- Find a column in your own data where row order doesn’t matter, and
+  listen to its distribution.

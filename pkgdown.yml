@@ -1,0 +1,10 @@
+pandoc: 3.8.3
+pkgdown: 2.2.1
+pkgdown_sha: ~
+articles:
+  distributions: distributions.html
+  soundeR: soundeR.html
+last_built: 2026-09-24T21:56Z
+urls:
+  reference: https://mattwaite.github.io/soundeR/reference
+  article: https://mattwaite.github.io/soundeR/articles
