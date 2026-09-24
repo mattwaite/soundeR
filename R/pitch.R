@@ -171,6 +171,44 @@ map_pitch <- function(values, scale, key_pc, range_midi, reverse = FALSE,
   }
 }
 
+# Map a `pan` mapping to stereo positions, -1 (left) to 1 (right).
+#   a fixed number or word (pan = 0.5, pan = "left"): every note there
+#   numbers:                                          rescaled from -1 to 1
+#   text/factors/logical:                             evenly spaced, -0.8 to 0.8
+map_pan <- function(values, literal, call = rlang::caller_env()) {
+  words <- c(left = -1, center = 0, centre = 0, middle = 0, right = 1)
+  if (literal) {
+    if (is.character(values) && all(tolower(values) %in% names(words))) {
+      return(unname(words[tolower(values)]))
+    }
+    if (!is.numeric(values) || any(values < -1 | values > 1)) {
+      cli::cli_abort(c(
+        "{.arg pan} must be between -1 (left) and 1 (right), or {.val left}, {.val center} or {.val right}.",
+        "x" = "You supplied {.val {values[1]}}."
+      ), call = call)
+    }
+    return(as.numeric(values))
+  }
+  if (is.logical(values) || is.character(values)) values <- factor(values)
+  if (is.factor(values)) {
+    k <- nlevels(values)
+    spots <- if (k == 1) 0 else seq(-0.8, 0.8, length.out = k)
+    return(spots[as.integer(values)])
+  }
+  if (!is.numeric(values)) {
+    cli::cli_abort("{.arg pan} must be numbers, text, or a factor, not {.obj_type_friendly {values}}.", call = call)
+  }
+  finite <- values[is.finite(values)]
+  if (length(finite) == 0 || diff(range(finite)) == 0) return(ifelse(is.na(values), NA_real_, 0))
+  scales::rescale(values, to = c(-1, 1), from = range(finite))
+}
+
+# Equal-power gains for a stereo position: list(left, right).
+pan_gains <- function(pan) {
+  angle <- (pan + 1) * pi / 4
+  list(left = cos(angle), right = sin(angle))
+}
+
 # Map data values to MIDI velocity (loudness), 40 to 120.
 map_volume <- function(values, call = rlang::caller_env()) {
   if (is.logical(values) || is.character(values)) values <- factor(values)

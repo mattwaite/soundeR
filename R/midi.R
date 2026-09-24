@@ -23,9 +23,10 @@ midi_channels <- setdiff(0:15, 9L)
 # In MIDI a note-off silences whatever is sounding on that channel and key, so
 # two overlapping notes at the same pitch would cut each other short (common in
 # real-time sonifications, where many notes share one pitch). And each channel
-# plays one instrument at a time. So give each note a channel that already
-# plays its instrument (`program`) and where its key is free, opening a new
-# channel when needed. Returns 0-based channel numbers.
+# plays one instrument at one stereo position at a time. So give each note a
+# channel that already plays its instrument and position (`program`, an id
+# for both) and where its key is free, opening a new channel when needed.
+# Returns 0-based channel numbers.
 assign_channels <- function(on, off, key, program = 0L, call = rlang::caller_env()) {
   program <- rep_len(as.integer(program), length(on))
   n_ch <- length(midi_channels)
@@ -52,15 +53,30 @@ assign_channels <- function(on, off, key, program = 0L, call = rlang::caller_env
   ch
 }
 
-# notes needs onset, duration (seconds), midi and velocity. `program` is a
-# General MIDI program (0-based), one for all notes or one per note.
-# At 120 bpm and 480 ticks per beat, one tick is about a millisecond.
+# MIDI pan values (0 = left, 64 = center, 127 = right), coarsened until every
+# instrument-and-position pair fits on the 15 melodic channels.
+midi_pans <- function(pan, program) {
+  for (steps in c(16, 4, 2)) {
+    value <- as.integer(round((round((pan + 1) / 2 * steps) / steps) * 127))
+    value[abs(pan) < 1e-9] <- 64L
+    if (nrow(unique(data.frame(program, value))) <= length(midi_channels)) return(value)
+  }
+  cli::cli_inform(c("i" = "Too many instruments and positions for MIDI, so real instruments play in the center."))
+  rep(64L, length(pan))
+}
+
+# notes needs onset, duration (seconds), midi, velocity, and optionally pan.
+# `program` is a General MIDI program (0-based), one for all notes or one per
+# note. At 120 bpm and 480 ticks per beat, one tick is about a millisecond.
 write_midi <- function(notes, path, program = 0L, ppq = 480L, bpm = 120) {
   to_tick <- function(s) as.integer(round(s * ppq * bpm / 60))
   on <- to_tick(notes$onset)
   off <- pmax(on + 1L, to_tick(notes$onset + notes$duration))
   program <- rep_len(as.integer(program), nrow(notes))
-  channel <- assign_channels(on, off, notes$midi, program)
+  pan <- midi_pans(if (is.null(notes$pan)) rep(0, nrow(notes)) else notes$pan, program)
+  # One id per instrument-and-position pair, so each channel has one of each.
+  slot <- program * 1000L + pan
+  channel <- assign_channels(on, off, notes$midi, slot)
   ev <- rbind(
     data.frame(tick = on, status = 0x90 + channel, d1 = notes$midi, d2 = notes$velocity, ord = 1L),
     data.frame(tick = off, status = 0x80 + channel, d1 = notes$midi, d2 = 0L, ord = 0L)
@@ -72,7 +88,10 @@ write_midi <- function(notes, path, program = 0L, ppq = 480L, bpm = 120) {
   body <- c(
     0, 0xFF, 0x51, 0x03, bitwAnd(bitwShiftR(tempo, 16), 0xFF),
     bitwAnd(bitwShiftR(tempo, 8), 0xFF), bitwAnd(tempo, 0xFF),
-    unlist(lapply(used, function(ch) c(0, 0xC0 + ch, program[match(ch, channel)])))
+    unlist(lapply(used, function(ch) {
+      i <- match(ch, channel)
+      c(0, 0xC0 + ch, program[i], 0, 0xB0 + ch, 10, pan[i])
+    }))
   )
   deltas <- diff(c(0L, ev$tick))
   body <- c(body, unlist(lapply(seq_len(nrow(ev)), function(i) {

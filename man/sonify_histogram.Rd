@@ -14,6 +14,7 @@ sonify_histogram(
   length = 20,
   bpm = NULL,
   log = FALSE,
+  pan = FALSE,
   scale = "pentatonic",
   key = "C",
   range = c("C3", "C6"),
@@ -45,6 +46,10 @@ Voices you leave out play the piano.}
 
 \item{log}{If \code{TRUE}, pitch follows the logarithm of the counts. That
 spreads out the notes when a few bins are much bigger than the rest.}
+
+\item{pan}{If \code{TRUE}, the sound travels from your left speaker to your
+right as the sweep moves from the lowest bin to the highest, so you can
+hear where you are along the axis.}
 
 \item{scale}{The musical scale that pitches snap to. See \code{\link[=sound_scales]{sound_scales()}}.
 The default, \code{"pentatonic"}, sounds pleasant with any data. \code{"happy"} is

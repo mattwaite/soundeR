@@ -29,6 +29,8 @@
 #' @param scale The musical scale notes snap to when `glide = FALSE`. See
 #'   [sound_scales()]. The glide always follows the curve exactly.
 #' @param length Total length in seconds of the sweep.
+#' @param pan If `TRUE`, the sound travels from your left speaker to your
+#'   right as the sweep moves across the curve.
 #'
 #' @return A `sonification` object. Print it to hear it, or pass it to
 #'   [sonify_video()] to see the curve.
@@ -42,7 +44,7 @@
 sonify_density <- function(data, x, weight = NULL, adjust = 1, glide = TRUE,
                            instrument = if (glide) "triangle" else "piano",
                            length = 10, points = 120, scale = "pentatonic",
-                           key = "C", range = c("C3", "C6"),
+                           key = "C", range = c("C3", "C6"), pan = FALSE,
                            engine = c("auto", "synth", "fluidsynth")) {
   if (!is.data.frame(data)) {
     cli::cli_abort("{.arg data} must be a data frame, not {.obj_type_friendly {data}}.")
@@ -83,11 +85,12 @@ sonify_density <- function(data, x, weight = NULL, adjust = 1, glide = TRUE,
   dens <- stats::density(values, weights = weights / sum(weights), bw = bw,
                          from = min(values), to = max(values), n = as.integer(points))
   curve <- data.frame(point = seq_along(dens$x), x_value = dens$x, height = dens$y)
+  curve$position <- if (pan) seq(-1, 1, length.out = nrow(curve)) else 0
   step <- length / nrow(curve)
 
   s <- sonify_data(
     curve, pitch = .data$height, volume = .data$height, time = .data$point, time_scale = step,
-    duration = step, instrument = instrument,
+    duration = step, pan = .data$position, instrument = instrument,
     scale = if (glide) "none" else scale, key = key, range = range, engine = engine
   )
   n <- s$notes
@@ -153,6 +156,11 @@ render_glide <- function(notes, wave, sr = synth_sr) {
     square = 0.5 * sign(sin(2 * pi * phase))
   )
   fade <- pmin(1, t / 0.05, (total - t) / 0.15)
-  out <- wave_samples * amp * pmax(fade, 0)
-  normalize_audio(new_audio(c(out, numeric(round(0.2 * sr))), sr))
+  out <- c(wave_samples * amp * pmax(fade, 0), numeric(round(0.2 * sr)))
+  pan <- if (is.null(notes$pan)) rep(0, nrow(notes)) else notes$pan
+  if (all(pan == 0)) return(normalize_audio(new_audio(out, sr)))
+  # The pan glides too, so the tone can travel from left to right.
+  p <- stats::approx(mid, pan, xout = (seq_along(out) - 1) / sr, rule = 2)$y
+  g <- pan_gains(p)
+  normalize_audio(new_audio(cbind(out * g$left, out * g$right), sr))
 }

@@ -251,13 +251,20 @@ like the 58-56 win over Michigan State on Jan. 2, the two notes are nearly
 the same. In a blowout, like the 90-55 win over Oregon on Jan. 13, they're
 far apart.
 
+Put on headphones and you'll also hear the two voices in different places:
+with more than one voice, soundeR spreads them from left to right. The
+`pan` column in `notes()` says where each note sits, from -1 (left) to 1
+(right). Use `pan = "left"`, `pan = "right"` or any number in between to
+place notes yourself, `pan = 0` to keep everything in the center, or map a
+column, like `pan = location`, to spread groups across the stereo field.
+
 `notes()` shows which voice each note belongs to:
 
 ```{r}
 husker_games |>
   sonify_data(c(husker_score, opponent_score), instrument = c("xylophone", "cello")) |>
   notes() |>
-  select(row, voice, onset, note, instrument, value)
+  select(row, voice, onset, note, pan, instrument, value)
 ```
 
 ### An instrument for each group

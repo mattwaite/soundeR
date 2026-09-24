@@ -10,6 +10,7 @@ sonify_data(
   time = NULL,
   volume = NULL,
   duration = NULL,
+  pan = NULL,
   sequence = NULL,
   voice = NULL,
   instrument = "piano",
@@ -43,6 +44,13 @@ once, one voice each.}
 bigger values longer notes, spread across \code{duration_range}. A column of
 durations (like \code{end - start}) plays in real time, times \code{time_scale} if
 you set it.}
+
+\item{pan}{Optional. Where each note sits between your left and right
+speakers. A number from -1 (left) to 1 (right), or \code{"left"}, \code{"center"}
+or \code{"right"}, places every note. A column spreads bigger values to the
+right, and gives each category its own place. With more than one voice
+and no \code{pan}, the voices are spread across left and right automatically;
+use \code{pan = 0} to keep them all in the center.}
 
 \item{sequence}{Optional. A column of groups to play one after another.}
 

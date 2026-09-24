@@ -29,6 +29,9 @@
 #'   spreads out the notes when a few bins are much bigger than the rest.
 #' @param length Total length in seconds of the sweep.
 #' @param bpm Notes (bins) per minute. Use instead of `length`.
+#' @param pan If `TRUE`, the sound travels from your left speaker to your
+#'   right as the sweep moves from the lowest bin to the highest, so you can
+#'   hear where you are along the axis.
 #' @inheritParams sonify_data
 #'
 #' @return A `sonification` object. Print it to hear it, or pass it to
@@ -46,7 +49,7 @@
 #' sonify_histogram(data.frame(x = rnorm(500)), x, bins = 20, instrument = "bell")
 sonify_histogram <- function(data, x, weight = NULL, bins = NULL, binwidth = NULL,
                              instrument = "piano", length = 20, bpm = NULL,
-                             log = FALSE, scale = "pentatonic", key = "C",
+                             log = FALSE, pan = FALSE, scale = "pentatonic", key = "C",
                              range = c("C3", "C6"), engine = c("auto", "synth", "fluidsynth"),
                              force = FALSE) {
   if (!is.data.frame(data)) {
@@ -103,12 +106,13 @@ sonify_histogram <- function(data, x, weight = NULL, bins = NULL, binwidth = NUL
   step <- if (is.null(bpm)) length / n_bins else 60 / bpm
   filled <- b[b$count > 0, ]
   filled$pitch_value <- if (log) log10(filled$count) else filled$count
+  filled$position <- if (pan && n_bins > 1) -1 + 2 * (filled$bin - 1) / (n_bins - 1) else 0
 
   # Each bin plays at its own slot, so empty bins are silences of the right
   # length: bin numbers played in real time, one `step` per bin.
   s <- sonify_data(
     filled, pitch = .data$pitch_value, volume = .data$count, time = .data$bin, time_scale = step,
-    duration = step, instrument = instrument, scale = scale, key = key,
+    duration = step, pan = .data$position, instrument = instrument, scale = scale, key = key,
     range = range, engine = engine, force = force
   )
 

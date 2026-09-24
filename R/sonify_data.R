@@ -69,6 +69,12 @@
 #'   instruments play the nearest semitone.
 #' @param key The key of the scale, like `"C"`, `"G"` or `"Bb"`.
 #' @param range The lowest and highest notes to use, like `c("C3", "C6")`.
+#' @param pan Optional. Where each note sits between your left and right
+#'   speakers. A number from -1 (left) to 1 (right), or `"left"`, `"center"`
+#'   or `"right"`, places every note. A column spreads bigger values to the
+#'   right, and gives each category its own place. With more than one voice
+#'   and no `pan`, the voices are spread across left and right automatically;
+#'   use `pan = 0` to keep them all in the center.
 #' @param duration_range The shortest and longest notes, in seconds, when
 #'   `duration` is a column of numbers or categories.
 #' @param reverse If `TRUE`, bigger numbers become lower notes.
@@ -104,7 +110,7 @@
 #' race <- data.frame(behind = c(0, 0.09, 0.21, 0.30, 0.52, 0.55, 0.91, 1.34))
 #' sonify_data(race, time = behind, time_scale = 2, instrument = "pluck")
 sonify_data <- function(data, pitch = NULL, time = NULL, volume = NULL,
-                        duration = NULL, sequence = NULL, voice = NULL,
+                        duration = NULL, pan = NULL, sequence = NULL, voice = NULL,
                         instrument = "piano", bpm = 120,
                         length = NULL, time_scale = NULL, gap = 1,
                         scale = "pentatonic", key = "C", range = c("C3", "C6"),
@@ -118,6 +124,7 @@ sonify_data <- function(data, pitch = NULL, time = NULL, volume = NULL,
   q_time <- rlang::enquo(time)
   q_volume <- rlang::enquo(volume)
   q_duration <- rlang::enquo(duration)
+  q_pan <- rlang::enquo(pan)
   q_sequence <- rlang::enquo(sequence)
   q_voice <- rlang::enquo(voice)
   pitch_qs <- split_pitch(q_pitch)
@@ -199,12 +206,32 @@ sonify_data <- function(data, pitch = NULL, time = NULL, volume = NULL,
   }
   velocity <- if (is.null(volume_vals)) rep(100L, n) else map_volume(volume_vals)
 
+  pan_vals <- eval_mapping(q_pan, data, "pan")
+  row_pan <- if (!is.null(pan_vals)) {
+    literal <- !any(all.vars(rlang::quo_get_expr(q_pan)) %in% names(data))
+    map_pan(pan_vals, literal = literal)
+  }
+  if (!is.null(row_pan) && anyNA(row_pan)) {
+    n_missing <- sum(is.na(row_pan))
+    cli::cli_inform(c("i" = "{n_missing} row{?s} with a missing pan play in the center."))
+    row_pan[is.na(row_pan)] <- 0
+  }
+
   voice_col <- if (k > 1) {
     rep(voice_levels, each = n)
   } else if (!is.null(voice_vals)) {
     voice_vals
   } else {
     NA_character_
+  }
+  # No `pan` and several voices: spread the voices from left to right.
+  note_pan <- if (!is.null(row_pan)) {
+    rep(row_pan, k)
+  } else if (!is.null(voice_levels) && base::length(voice_levels) > 1) {
+    spread <- seq(-0.6, 0.6, length.out = base::length(voice_levels))
+    spread[match(if (k > 1) rep(voice_levels, each = n) else voice_col, voice_levels)]
+  } else {
+    0
   }
   notes <- tibble::tibble(
     row = rep(seq_len(n), k),
@@ -216,6 +243,7 @@ sonify_data <- function(data, pitch = NULL, time = NULL, volume = NULL,
     note = midi_to_note(midi),
     freq = freq,
     velocity = rep(velocity, k),
+    pan = note_pan,
     instrument = if (is.null(voice_levels)) insts[[1]]$name else
       vapply(insts[voice_col], `[[`, character(1), "name", USE.NAMES = FALSE),
     value = value,
@@ -239,6 +267,7 @@ sonify_data <- function(data, pitch = NULL, time = NULL, volume = NULL,
       labels = list(
         pitch = if (length(pitch_qs)) names(pitch_qs), time = mapping_label(q_time),
         volume = mapping_label(q_volume), duration = mapping_label(q_duration),
+        pan = mapping_label(q_pan),
         sequence = mapping_label(q_sequence),
         voice = mapping_label(q_voice)
       )

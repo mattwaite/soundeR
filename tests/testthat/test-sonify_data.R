@@ -9,7 +9,7 @@ test_that("sonify_data() builds one note per row", {
   expect_s3_class(s, "sonification")
   n <- notes(s)
   expect_named(n, c("row", "sequence", "voice", "onset", "duration", "midi", "note", "freq",
-                    "velocity", "instrument", "value", "time_value"))
+                    "velocity", "pan", "instrument", "value", "time_value"))
   expect_equal(nrow(n), 6)
   expect_equal(n$onset, (0:5) * 0.5)
   expect_equal(n$value, season$margin)

@@ -16,6 +16,7 @@ sonify_density(
   scale = "pentatonic",
   key = "C",
   range = c("C3", "C6"),
+  pan = FALSE,
   engine = c("auto", "synth", "fluidsynth")
 )
 }
@@ -45,6 +46,9 @@ sonify_density(
 \item{key}{The key of the scale, like \code{"C"}, \code{"G"} or \code{"Bb"}.}
 
 \item{range}{The lowest and highest notes to use, like \code{c("C3", "C6")}.}
+
+\item{pan}{If \code{TRUE}, the sound travels from your left speaker to your
+right as the sweep moves across the curve.}
 
 \item{engine}{How to make the sound. \code{"auto"} uses real instruments when
 the fluidsynth package and a soundfont are available, and the built-in

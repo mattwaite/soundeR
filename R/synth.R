@@ -63,10 +63,22 @@ render_synth <- function(notes, voice, sr = synth_sr) {
   })
   starts <- floor(notes$onset * sr) + 1
   total <- max(starts + lengths(sounds)) + round(0.2 * sr)
-  buf <- numeric(total)
+  pan <- if (is.null(notes$pan)) rep(0, nrow(notes)) else notes$pan
+  if (all(pan == 0)) {
+    buf <- numeric(total)
+    for (i in seq_along(sounds)) {
+      idx <- starts[i] + seq_along(sounds[[i]]) - 1
+      buf[idx] <- buf[idx] + sounds[[i]]
+    }
+    return(normalize_audio(new_audio(buf, sr)))
+  }
+  # Some notes are panned, so mix into stereo.
+  gains <- pan_gains(pan)
+  buf <- matrix(0, total, 2)
   for (i in seq_along(sounds)) {
     idx <- starts[i] + seq_along(sounds[[i]]) - 1
-    buf[idx] <- buf[idx] + sounds[[i]]
+    buf[idx, 1] <- buf[idx, 1] + sounds[[i]] * gains$left[i]
+    buf[idx, 2] <- buf[idx, 2] + sounds[[i]] * gains$right[i]
   }
   normalize_audio(new_audio(buf, sr))
 }

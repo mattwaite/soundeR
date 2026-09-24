@@ -98,6 +98,15 @@ Neither version is wrong. Decade bins show the overall shape and hide the
 rounding. Year bins show the rounding and bury the shape. Picking a bin
 width is a choice, in sound just as in a chart, so try more than one.
 
+With `pan = TRUE`, the sound also travels from your left speaker to your
+right as the sweep moves across the years, so you can hear where you are
+along the axis. It works best with headphones:
+
+```{r}
+ne_house_years |>
+  sonify_histogram(year_built, weight = houses, binwidth = 10, pan = TRUE, instrument = "marimba")
+```
+
 ## A few big bins can drown out the rest
 
 When a handful of bins are far bigger than the others, most notes crowd
