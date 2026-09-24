@@ -97,3 +97,32 @@ test_that("sonify_video() writes a video with sound", {
   expect_equal(nrow(info$audio), 1)
   expect_equal(info$duration, audio_seconds(get_audio(race_s)), tolerance = 0.5)
 })
+
+test_that("each voice gets its own color, and played dots fill with it", {
+  plays <- data.frame(yards = c(4, 12, 0, -2), type = c("run", "pass", "incomplete", "run"))
+  s <- sonify_data(plays, yards, voice = type, instrument = "sine")
+  layout <- video_layout(s)
+  st <- style
+  st$point_color <- NULL
+  d <- built_layers(video_frame(layout, 0.6, st))[[2]]
+  colors <- voice_colors(c("run", "pass", "incomplete"))
+  expect_equal(d$colour, unname(colors[notes(s)$voice]))
+  played <- notes(s)$onset <= 0.6
+  expect_equal(d$fill[played], unname(colors[notes(s)$voice[played]]))
+  expect_true(all(d$fill[!played] == "white"))
+})
+
+test_that("voice colors can be set in order or by name", {
+  expect_equal(voice_colors(c("a", "b"), c("red", "blue")), c(a = "red", b = "blue"))
+  expect_equal(voice_colors(c("a", "b"), c(b = "blue", a = "red")), c(a = "red", b = "blue"))
+  expect_equal(voice_colors(NULL, "navy"), c(all = "navy"))
+  expect_error(voice_colors(c("a", "b"), c("red", "blue", "green")), "3 colors for 2")
+  expect_error(voice_colors(c("a", "b"), c(a = "red")), "no color")
+})
+
+test_that("two pitch columns share the y axis, labelled with both names", {
+  s <- sonify_data(data.frame(ours = 1:3, theirs = 3:1), c(ours, theirs), instrument = "sine")
+  layout <- video_layout(s)
+  expect_equal(layout$y_label, "ours and theirs")
+  expect_null(layout$legend_title)
+})

@@ -3,10 +3,8 @@ fluidsynth_ready <- function() {
     !is.null(tryCatch(fluidsynth::soundfont_path(), error = function(e) NULL))
 }
 
-# Decide which engine and voice will actually play this sonification.
-choose_engine <- function(x, call = rlang::caller_env()) {
-  inst <- x$settings$instrument
-  engine <- x$settings$engine
+# Decide which engine plays one instrument: list(engine, voice or program).
+choose_engine <- function(inst, engine, call = rlang::caller_env()) {
   if (inst$type == "synth") {
     if (engine == "fluidsynth") {
       cli::cli_abort(c(
@@ -25,15 +23,7 @@ choose_engine <- function(x, call = rlang::caller_env()) {
       "i" = "Run {.run soundeR::sound_setup()} once to set them up."
     ), call = call)
   }
-  standin <- synth_standin(inst$program)
-  if (engine == "auto") {
-    cli::cli_inform(
-      c("i" = "Playing {.val {inst$name}} with the built-in {.val {standin}} sound because real instruments aren't set up.",
-        " " = "Run {.run soundeR::sound_setup()} once to hear the real thing."),
-      .frequency = "regularly", .frequency_id = "soundeR_standin"
-    )
-  }
-  list(engine = "synth", voice = standin)
+  list(engine = "synth", voice = synth_standin(inst$program), standin = TRUE)
 }
 
 render_fluidsynth <- function(notes, program) {
@@ -56,16 +46,49 @@ render_fluidsynth <- function(notes, program) {
   trim_tail(normalize_audio(audio), keep = 0.75)
 }
 
+# Add two renders together (same sample rate), making both stereo if needed.
+mix_audio <- function(a, b) {
+  stereo <- function(m) if (ncol(m) == 1) cbind(m, m) else m
+  sa <- stereo(a$samples)
+  sb <- stereo(b$samples)
+  len <- max(nrow(sa), nrow(sb))
+  pad <- function(m) rbind(m, matrix(0, len - nrow(m), 2))
+  normalize_audio(new_audio(pad(sa) + pad(sb), a$sr))
+}
+
 # Render (or fetch from the cache) the audio for a sonification.
 get_audio <- function(x) {
   if (!is.null(x$cache$audio)) return(x$cache$audio)
-  choice <- choose_engine(x)
-  audio <- if (choice$engine == "fluidsynth") {
-    render_fluidsynth(x$notes, choice$program)
-  } else {
-    render_synth(x$notes, choice$voice)
+  insts <- x$settings$instruments
+  choices <- lapply(insts, choose_engine, engine = x$settings$engine)
+  names(choices) <- vapply(insts, `[[`, character(1), "name")
+
+  standins <- Filter(function(ch) isTRUE(ch$standin), choices)
+  if (length(standins) && x$settings$engine == "auto") {
+    swaps <- sprintf("%s (as %s)", names(standins), vapply(standins, `[[`, character(1), "voice"))
+    cli::cli_inform(
+      c("i" = "Real instruments aren't set up, so these use built-in sounds: {swaps}.",
+        " " = "Run {.run soundeR::sound_setup()} once to hear the real thing."),
+      .frequency = "regularly", .frequency_id = "soundeR_standin"
+    )
   }
-  x$cache$engine <- choice
+
+  notes <- x$notes
+  choice <- choices[notes$instrument]
+  engine <- vapply(choice, `[[`, character(1), "engine")
+  fs <- notes[engine == "fluidsynth", ]
+  syn <- notes[engine == "synth", ]
+  syn_voice <- vapply(choice[engine == "synth"], `[[`, character(1), "voice")
+
+  audio <- if (nrow(syn) == 0) {
+    render_fluidsynth(fs, vapply(choice[engine == "fluidsynth"], `[[`, integer(1), "program"))
+  } else if (nrow(fs) == 0) {
+    render_synth(syn, syn_voice)
+  } else {
+    real <- render_fluidsynth(fs, vapply(choice[engine == "fluidsynth"], `[[`, integer(1), "program"))
+    mix_audio(real, render_synth(syn, syn_voice, sr = real$sr))
+  }
+  x$cache$engine <- choices
   x$cache$audio <- audio
   audio
 }

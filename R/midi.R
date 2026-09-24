@@ -22,28 +22,45 @@ midi_channels <- setdiff(0:15, 9L)
 
 # In MIDI a note-off silences whatever is sounding on that channel and key, so
 # two overlapping notes at the same pitch would cut each other short (common in
-# real-time sonifications, where many notes share one pitch). Give each note a
-# channel where its key is free; returns 0-based channel numbers.
-assign_channels <- function(on, off, key) {
-  free_at <- matrix(-1L, nrow = length(midi_channels), ncol = 128)
+# real-time sonifications, where many notes share one pitch). And each channel
+# plays one instrument at a time. So give each note a channel that already
+# plays its instrument (`program`) and where its key is free, opening a new
+# channel when needed. Returns 0-based channel numbers.
+assign_channels <- function(on, off, key, program = 0L, call = rlang::caller_env()) {
+  program <- rep_len(as.integer(program), length(on))
+  n_ch <- length(midi_channels)
+  free_at <- matrix(-1L, nrow = n_ch, ncol = 128)
+  ch_program <- rep(NA_integer_, n_ch)
   ch <- integer(length(on))
   for (i in order(on, off)) {
     k <- key[i] + 1L
-    free <- which(free_at[, k] <= on[i])
-    j <- if (length(free)) free[1] else which.min(free_at[, k])
+    mine <- which(ch_program == program[i])
+    free <- mine[free_at[mine, k] <= on[i]]
+    if (length(free)) {
+      j <- free[1]
+    } else if (anyNA(ch_program)) {
+      j <- which(is.na(ch_program))[1]
+      ch_program[j] <- program[i]
+    } else if (length(mine)) {
+      j <- mine[which.min(free_at[mine, k])]
+    } else {
+      cli::cli_abort("Too many different instruments at once; MIDI allows 15.", call = call)
+    }
     ch[i] <- midi_channels[j]
     free_at[j, k] <- off[i]
   }
   ch
 }
 
-# notes needs onset, duration (seconds), midi and velocity.
+# notes needs onset, duration (seconds), midi and velocity. `program` is a
+# General MIDI program (0-based), one for all notes or one per note.
 # At 120 bpm and 480 ticks per beat, one tick is about a millisecond.
 write_midi <- function(notes, path, program = 0L, ppq = 480L, bpm = 120) {
   to_tick <- function(s) as.integer(round(s * ppq * bpm / 60))
   on <- to_tick(notes$onset)
   off <- pmax(on + 1L, to_tick(notes$onset + notes$duration))
-  channel <- assign_channels(on, off, notes$midi)
+  program <- rep_len(as.integer(program), nrow(notes))
+  channel <- assign_channels(on, off, notes$midi, program)
   ev <- rbind(
     data.frame(tick = on, status = 0x90 + channel, d1 = notes$midi, d2 = notes$velocity, ord = 1L),
     data.frame(tick = off, status = 0x80 + channel, d1 = notes$midi, d2 = 0L, ord = 0L)
@@ -55,7 +72,7 @@ write_midi <- function(notes, path, program = 0L, ppq = 480L, bpm = 120) {
   body <- c(
     0, 0xFF, 0x51, 0x03, bitwAnd(bitwShiftR(tempo, 16), 0xFF),
     bitwAnd(bitwShiftR(tempo, 8), 0xFF), bitwAnd(tempo, 0xFF),
-    unlist(lapply(used, function(ch) c(0, 0xC0 + ch, program)))
+    unlist(lapply(used, function(ch) c(0, 0xC0 + ch, program[match(ch, channel)])))
   )
   deltas <- diff(c(0L, ev$tick))
   body <- c(body, unlist(lapply(seq_len(nrow(ev)), function(i) {

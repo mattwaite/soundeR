@@ -14,7 +14,7 @@ sonify_video(
   y_label = NULL,
   theme = NULL,
   title_position = c("plot", "panel"),
-  point_color = "#1f2d3d",
+  point_color = NULL,
   playhead_color = "#c8102e",
   highlight_color = "#f2efe6",
   width = 1280,
@@ -37,8 +37,12 @@ mapped.}
 \item{title_position}{\code{"plot"} (the default) lines titles and captions up
 with the whole image; \code{"panel"} lines them up with the plot panel.}
 
-\item{point_color, playhead_color, highlight_color}{Colors for the dots, the
-moving playhead and the band behind the row that's playing.}
+\item{point_color}{Color for the dots. With more than one voice, one color
+per voice, in order or named by voice; by default each voice gets its
+own color from a colorblind-friendly palette.}
+
+\item{playhead_color, highlight_color}{Colors for the moving playhead and
+the band behind the row that's playing.}
 
 \item{width, height}{Size of the video in pixels.}
 

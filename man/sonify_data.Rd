@@ -10,6 +10,7 @@ sonify_data(
   time = NULL,
   volume = NULL,
   sequence = NULL,
+  voice = NULL,
   instrument = "piano",
   bpm = 120,
   length = NULL,
@@ -28,7 +29,8 @@ sonify_data(
 
 \item{pitch}{A column (or calculation) to map to pitch. Bigger numbers are
 higher notes. Text and factors get one note per category. Leave it out to
-play every note at the same pitch.}
+play every note at the same pitch. Use \code{c()} to play several columns at
+once, one voice each.}
 
 \item{time}{Optional. A column that decides when each note plays.}
 
@@ -36,7 +38,12 @@ play every note at the same pitch.}
 
 \item{sequence}{Optional. A column of groups to play one after another.}
 
-\item{instrument}{The instrument to use. See \code{\link[=instruments]{instruments()}}.}
+\item{voice}{Optional. A column of groups, each played by its own
+instrument.}
+
+\item{instrument}{The instrument to use (see \code{\link[=instruments]{instruments()}}). With more
+than one voice, one instrument per voice, in order or named by voice.
+Voices you leave out play the piano.}
 
 \item{bpm}{Notes per minute when rows play in order.}
 
@@ -93,6 +100,23 @@ The notes are spread out to fill the same total time.
 Grouping with \code{dplyr::group_by()} does not change the sound. Use
 \code{sequence} to hear groups in turn.
 }
+
+\subsection{More than one voice}{
+
+There are two ways to play more than one instrument:
+\itemize{
+\item Give \code{pitch} several columns, like \code{pitch = c(home_score, away_score)}.
+Each row plays one note per column at the same moment, and the columns
+share one pitch scale, so the same number is the same note in either
+column.
+\item Map a column to \code{voice}, like \code{voice = play_type}. Each note is played by
+the instrument for its group. Timing doesn't change.
+}
+
+Then give \code{instrument} one name per voice, either in order
+(\code{c("xylophone", "cello")}) or by name
+(\code{c(run = "tuba", pass = "harp")}).
+}
 }
 \examples{
 # A made-up season: points scored minus points allowed
@@ -102,6 +126,18 @@ season <- data.frame(
 )
 s <- sonify_data(season, margin, instrument = "bell", bpm = 150)
 notes(s)
+
+# Two voices at once: points for and against
+scores <- data.frame(ours = c(70, 81, 64, 90), theirs = c(65, 84, 60, 72))
+notes(sonify_data(scores, c(ours, theirs), instrument = c("bell", "pluck")))
+
+# One instrument per type of play
+plays <- data.frame(
+  yards = c(4, 12, 0, -2, 35),
+  type = c("run", "pass", "incomplete", "run", "pass")
+)
+sonify_data(plays, yards, voice = type,
+            instrument = c(run = "pluck", pass = "bell", incomplete = "square"))
 
 # A made-up race, played in real time like the NYT's 2010 Olympic Musical
 race <- data.frame(behind = c(0, 0.09, 0.21, 0.30, 0.52, 0.55, 0.91, 1.34))

@@ -8,7 +8,7 @@ test_that("sonify_data() builds one note per row", {
   s <- sonify_data(season, margin, instrument = "bell")
   expect_s3_class(s, "sonification")
   n <- notes(s)
-  expect_named(n, c("row", "sequence", "onset", "duration", "midi", "note", "freq",
+  expect_named(n, c("row", "sequence", "voice", "onset", "duration", "midi", "note", "freq",
                     "velocity", "instrument", "value", "time_value"))
   expect_equal(nrow(n), 6)
   expect_equal(n$onset, (0:5) * 0.5)
@@ -61,7 +61,7 @@ test_that("bad inputs give friendly errors", {
   expect_error(sonify_data(season, margin, scale = "dorian"), "must be one of")
   expect_error(sonify_data(season, margin, range = c("C6", "C3")), "low to high")
   expect_error(sonify_data(season, margin, bpm = 100, length = 5), "not both")
-  expect_error(sonify_data(season, c(1, 2)), "2 values")
+  expect_error(sonify_data(season, 1:2), "2 values")
 })
 
 test_that("grouped data gets a hint but no change in sound", {
@@ -79,4 +79,69 @@ test_that("instrument names resolve", {
   expect_equal(resolve_instrument("bell")$type, "synth")
   expect_equal(nrow(instruments()), 133)
   expect_true(all(instruments("brass")$family == "brass"))
+})
+
+test_that("several pitch columns play together on a shared scale", {
+  d <- data.frame(ours = c(70, 80, 60), theirs = c(80, 60, 70))
+  s <- sonify_data(d, c(ours, theirs), instrument = c("bell", "pluck"))
+  n <- notes(s)
+  expect_equal(nrow(n), 6)
+  expect_equal(n$voice, rep(c("ours", "theirs"), 3))
+  expect_equal(n$instrument, rep(c("bell", "pluck"), 3))
+  expect_equal(n$onset, rep(c(0, 0.5, 1), each = 2))
+  expect_equal(n$row, rep(1:3, each = 2))
+  # Same number, same note, whichever column it came from.
+  expect_equal(n$midi[n$voice == "ours" & n$value == 80], n$midi[n$voice == "theirs" & n$value == 80])
+  expect_equal(s$settings$labels$pitch, c("ours", "theirs"))
+})
+
+test_that("pitch columns can be renamed inside c()", {
+  d <- data.frame(a = 1:2, b = 2:3)
+  s <- sonify_data(d, c(home = a, away = b), instrument = "sine")
+  expect_equal(unique(notes(s)$voice), c("home", "away"))
+})
+
+test_that("voice picks an instrument per group without changing timing", {
+  plays <- data.frame(yards = c(4, 12, 0, -2), type = c("run", "pass", "incomplete", "run"))
+  s <- sonify_data(plays, yards, voice = type,
+                   instrument = c(run = "tuba", pass = "harp", incomplete = "timpani"))
+  n <- notes(s)
+  expect_equal(n$onset, c(0, 0.5, 1, 1.5))
+  expect_equal(n$instrument, c("tuba", "harp", "timpani", "tuba"))
+  expect_equal(s$settings$voices, c("run", "pass", "incomplete"))
+
+  in_order <- sonify_data(plays, yards, voice = type, instrument = c("tuba", "harp", "timpani"))
+  expect_equal(notes(in_order)$instrument, n$instrument)
+  one <- sonify_data(plays, yards, voice = type, instrument = "harp")
+  expect_equal(unique(notes(one)$instrument), "harp")
+})
+
+test_that("voices left out of a named instrument list play the piano", {
+  plays <- data.frame(yards = c(4, 12, -7), type = c("run", "pass", "sack"))
+  expect_message(
+    s <- sonify_data(plays, yards, voice = type, instrument = c(run = "tuba", pass = "harp")),
+    "sack"
+  )
+  expect_equal(notes(s)$instrument, c("tuba", "harp", "piano"))
+})
+
+test_that("missing voice values get their own voice", {
+  plays <- data.frame(yards = c(4, 12, 3), type = c("run", NA, "run"))
+  expect_message(s <- sonify_data(plays, yards, voice = type, instrument = "tuba"), NA)
+  expect_equal(notes(s)$voice, c("run", "(missing)", "run"))
+})
+
+test_that("mismatched instruments and voices give friendly errors", {
+  plays <- data.frame(yards = c(4, 12), type = c("run", "pass"))
+  expect_error(sonify_data(plays, yards, voice = type, instrument = c(runn = "tuba")), "Did you mean")
+  expect_error(sonify_data(plays, yards, voice = type, instrument = c("tuba", "harp", "oboe")), "3 instruments for 2 voices")
+  expect_error(sonify_data(plays, yards, voice = type, instrument = c(run = "tuba", "harp")), "every instrument")
+  expect_error(sonify_data(plays, yards, instrument = c("tuba", "harp")), "only one voice")
+  expect_error(sonify_data(plays, c(yards, yards), voice = type), "not both")
+})
+
+test_that("missing values in one pitch column only silence that voice", {
+  d <- data.frame(a = c(1, NA, 3), b = c(4, 5, 6))
+  expect_message(s <- sonify_data(d, c(a, b), instrument = "sine"), "1 note with a missing pitch")
+  expect_equal(nrow(notes(s)), 5)
 })

@@ -81,12 +81,11 @@ test_that("dense fluidsynth renders don't clip", {
 })
 
 test_that("without real instruments, GM instruments fall back to a synth stand-in", {
-  s <- sonify_data(data.frame(x = 1:3), x, instrument = "xylophone", engine = "synth")
-  expect_equal(choose_engine(s), list(engine = "synth", voice = "bell"))
+  xylo <- resolve_instrument("xylophone")
+  expect_equal(choose_engine(xylo, "synth"), list(engine = "synth", voice = "bell", standin = TRUE))
   expect_equal(synth_standin(0L), "pluck")
   expect_equal(synth_standin(42L), "triangle")
-  b <- sonify_data(data.frame(x = 1:3), x, instrument = "bell", engine = "fluidsynth")
-  expect_error(choose_engine(b), "built-in synth")
+  expect_error(choose_engine(resolve_instrument("bell"), "fluidsynth"), "built-in synth")
 })
 
 test_that("fluidsynth renders real instruments, loud and trimmed", {
@@ -94,10 +93,47 @@ test_that("fluidsynth renders real instruments, loud and trimmed", {
   race <- data.frame(behind = c(0, 0.09, 0.21, 0.30))
   s <- sonify_data(race, time = behind, time_scale = 2, instrument = "piano")
   a <- get_audio(s)
-  expect_equal(s$cache$engine$engine, "fluidsynth")
+  expect_equal(s$cache$engine$piano$engine, "fluidsynth")
   expect_equal(ncol(a$samples), 2)
   expect_equal(max(abs(a$samples)), 0.9, tolerance = 1e-3)
   last_end <- max(notes(s)$onset + notes(s)$duration)
   expect_lt(audio_seconds(a), last_end + 3)
   expect_identical(get_audio(s), a) # cached
+})
+
+test_that("different instruments never share a MIDI channel", {
+  n <- data.frame(onset = c(0, 0, 0.5, 0.5), duration = 1, midi = c(60L, 60L, 64L, 64L), velocity = 100L)
+  prog <- c(58L, 46L, 58L, 46L)
+  on <- as.integer(round(n$onset * 960))
+  off <- as.integer(round((n$onset + n$duration) * 960))
+  ch <- assign_channels(on, off, n$midi, prog)
+  expect_true(all(tapply(prog, ch, function(p) length(unique(p))) == 1))
+  expect_false(ch[1] == ch[2])
+
+  skip_if_not_installed("tuneR")
+  path <- withr::local_tempfile(fileext = ".mid")
+  write_midi(n, path, program = prog)
+  m <- tuneR::readMidi(path)
+  pc <- m[m$event == "Program Change", ]
+  expect_setequal(pc$parameter1, c(58, 46))
+  expect_equal(nrow(pc), length(unique(ch)))
+})
+
+test_that("several synth voices render together", {
+  d <- data.frame(a = c(1, 2, 3), b = c(3, 2, 1))
+  s <- sonify_data(d, c(a, b), instrument = c("bell", "pluck"))
+  a <- get_audio(s)
+  expect_equal(a$sr, synth_sr)
+  expect_equal(max(abs(a$samples)), 0.9)
+  expect_match(describe(s), "bell \\+ pluck")
+})
+
+test_that("built-in sounds and real instruments mix", {
+  skip_if_not(fluidsynth_ready(), "fluidsynth or its soundfont isn't available")
+  d <- data.frame(a = c(1, 2, 3), b = c(3, 2, 1))
+  s <- sonify_data(d, c(a, b), instrument = c("bell", "cello"))
+  a <- get_audio(s)
+  expect_equal(ncol(a$samples), 2)
+  expect_equal(a$sr, 44100L)
+  expect_equal(max(abs(a$samples)), 0.9, tolerance = 1e-3)
 })

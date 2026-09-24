@@ -31,8 +31,11 @@
 #' @param theme Optional. A ggplot2 theme to change how the chart looks.
 #' @param title_position `"plot"` (the default) lines titles and captions up
 #'   with the whole image; `"panel"` lines them up with the plot panel.
-#' @param point_color,playhead_color,highlight_color Colors for the dots, the
-#'   moving playhead and the band behind the row that's playing.
+#' @param point_color Color for the dots. With more than one voice, one color
+#'   per voice, in order or named by voice; by default each voice gets its
+#'   own color from a colorblind-friendly palette.
+#' @param playhead_color,highlight_color Colors for the moving playhead and
+#'   the band behind the row that's playing.
 #' @param width,height Size of the video in pixels.
 #' @param fps Frames per second. Higher is smoother but slower to make.
 #'
@@ -53,7 +56,7 @@
 sonify_video <- function(x, path, title = NULL, subtitle = NULL, caption = NULL,
                          x_label = NULL, y_label = NULL,
                          theme = NULL, title_position = c("plot", "panel"),
-                         point_color = "#1f2d3d", playhead_color = "#c8102e",
+                         point_color = NULL, playhead_color = "#c8102e",
                          highlight_color = "#f2efe6", width = 1280, height = 720,
                          fps = 12) {
   check_sonification(x)
@@ -77,6 +80,7 @@ sonify_video <- function(x, path, title = NULL, subtitle = NULL, caption = NULL,
   frame_times <- seq(0, audio_seconds(audio), by = 1 / fps)
 
   layout <- video_layout(x)
+  voice_colors(layout$voices, point_color) # check the colors before drawing
   if (!is.null(x_label)) layout$x_label <- x_label
   if (!is.null(y_label)) layout$y_label <- y_label
   style <- list(
@@ -106,6 +110,9 @@ sonify_video <- function(x, path, title = NULL, subtitle = NULL, caption = NULL,
 video_layout <- function(x) {
   n <- x$notes
   labels <- x$settings$labels
+  voices <- x$settings$voices
+  n$voice_key <- if (is.null(voices)) factor("all") else factor(n$voice, levels = voices)
+  common <- list(voices = voices, legend_title = labels$voice)
   if (!is.null(labels$sequence)) {
     # Groups in the order they play.
     starts <- sort(tapply(n$onset, n$sequence, min))
@@ -117,21 +124,21 @@ video_layout <- function(x) {
       tv <- time_to_numeric(n$time_value)
       tv - stats::ave(tv, n$group, FUN = function(v) min(v, na.rm = TRUE))
     }
-    list(
+    c(common, list(
       type = "sequence", notes = n, groups = groups, starts = starts,
       x_label = if (is.null(labels$time)) "Order" else labels$time,
       y_label = NULL,
       x_range = range(n$x)
-    )
+    ))
   } else {
     n$x <- if (is.null(labels$time)) n$row else n$time_value
     if (inherits(n$x, "difftime")) n$x <- as.numeric(n$x, units = "secs")
     n$y <- if (is.null(labels$pitch)) factor(" ") else n$value
-    list(
+    c(common, list(
       type = "single", notes = n,
       x_label = if (is.null(labels$time)) "Row" else labels$time,
-      y_label = labels$pitch %||% ""
-    )
+      y_label = paste(labels$pitch, collapse = " and ")
+    ))
   }
 }
 
@@ -155,6 +162,13 @@ restore_x_class <- function(v, like) {
 video_frame <- function(layout, t, style) {
   n <- layout$notes
   n$played <- n$onset <= t + 1e-9
+  colors <- voice_colors(layout$voices, style$point_color)
+  # Played dots fill with their voice's color; unplayed ones are hollow.
+  n$fill <- ifelse(n$played, colors[as.character(n$voice_key)], "white")
+  dots <- ggplot2::geom_point(
+    ggplot2::aes(fill = .data$fill, colour = .data$voice_key),
+    shape = 21, size = 3.2, stroke = 0.6
+  )
 
   if (layout$type == "sequence") {
     current <- layout$groups[max(which(layout$starts <= t + 1e-9), 1)]
@@ -169,8 +183,7 @@ video_frame <- function(layout, t, style) {
     p <- ggplot2::ggplot(n, ggplot2::aes(x = .data$x, y = .data$group)) +
       ggplot2::geom_tile(data = band, ggplot2::aes(width = .data$width), height = 0.9,
                          fill = style$highlight_color) +
-      ggplot2::geom_point(ggplot2::aes(fill = .data$played), shape = 21, size = 3.2,
-                          stroke = 0.6, colour = style$point_color) +
+      dots +
       ggplot2::geom_tile(data = head_df, width = span * 0.004 + 0.002, height = 0.9,
                          fill = style$playhead_color) +
       ggplot2::scale_y_discrete(limits = rev(layout$groups)) +
@@ -180,14 +193,20 @@ video_frame <- function(layout, t, style) {
     head <- restore_x_class(playhead_x(n$onset, n$x, t), n$x)
     p <- ggplot2::ggplot(n, ggplot2::aes(x = .data$x, y = .data$y)) +
       ggplot2::geom_vline(xintercept = head, colour = style$playhead_color, linewidth = 0.9) +
-      ggplot2::geom_point(ggplot2::aes(fill = .data$played), shape = 21, size = 3.2,
-                          stroke = 0.6, colour = style$point_color) +
+      dots +
       ggplot2::labs(x = layout$x_label, y = layout$y_label)
   }
 
   p <- p +
-    ggplot2::scale_fill_manual(values = c(`FALSE` = "white", `TRUE` = style$point_color),
-                               guide = "none") +
+    ggplot2::scale_fill_identity() +
+    ggplot2::scale_colour_manual(
+      values = colors, name = layout$legend_title,
+      guide = if (length(colors) > 1) {
+        ggplot2::guide_legend(override.aes = list(fill = unname(colors), size = 4))
+      } else {
+        "none"
+      }
+    ) +
     ggplot2::labs(title = style$title, subtitle = style$subtitle, caption = style$caption) +
     video_default_theme(layout$type)
   if (!is.null(style$theme)) p <- p + style$theme
@@ -204,6 +223,39 @@ video_default_theme <- function(type) {
       panel.grid.major.y = if (type == "sequence") ggplot2::element_blank(),
       panel.grid.minor = ggplot2::element_blank(),
       plot.title = ggplot2::element_text(face = "bold"),
+      legend.position = "top",
+      legend.justification = "left",
+      legend.location = "plot",
       plot.background = ggplot2::element_rect(fill = "white", colour = NA)
     )
+}
+
+# Okabe-Ito colors (colorblind-friendly), minus the red-orange that would
+# clash with the playhead, led by the single-voice navy.
+voice_palette <- c("#1f2d3d", "#E69F00", "#0072B2", "#009E73", "#CC79A7",
+                   "#56B4E9", "#F0E442", "#999999")
+
+# One color per voice, named by voice ("all" when there are no voices).
+voice_colors <- function(voices, point_color = NULL, call = rlang::caller_env()) {
+  keys <- voices %||% "all"
+  if (is.null(point_color)) {
+    if (length(keys) > length(voice_palette)) {
+      cli::cli_abort("There are {length(keys)} voices; give {.arg point_color} one color for each.", call = call)
+    }
+    return(rlang::set_names(voice_palette[seq_along(keys)], keys))
+  }
+  if (!is.character(point_color)) cli::cli_abort("{.arg point_color} must be colors, like {.val navy}.", call = call)
+  if (!is.null(names(point_color)) && !is.null(voices)) {
+    missing_voices <- setdiff(keys, names(point_color))
+    if (length(missing_voices)) {
+      cli::cli_abort("{.arg point_color} has no color for {.val {missing_voices}}.", call = call)
+    }
+    return(point_color[keys])
+  }
+  point_color <- unname(point_color)
+  if (length(point_color) == 1) return(rlang::set_names(rep(point_color, length(keys)), keys))
+  if (length(point_color) != length(keys)) {
+    cli::cli_abort("{.arg point_color} has {length(point_color)} colors for {length(keys)} voices.", call = call)
+  }
+  rlang::set_names(point_color, keys)
 }

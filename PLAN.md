@@ -52,12 +52,17 @@ husker_games |>
 
 - One note per row, played in row order. Higher pitch means a bigger win and lower pitch means a worse loss.
 - Printing the result shows an audio player (§6).
-- Two-voice version: pivot longer and map `voice`:
+- Two-voice version (built in Phase 3): list both columns in `pitch`, or pivot longer and map `voice`:
 
 ```r
 husker_games |>
+  sonify_data(pitch = c(husker_score, opponent_score), instrument = c("xylophone", "cello"), bpm = 120)
+
+# or long form: voice picks the instrument; a shared time column lines the notes up
+husker_games |>
   pivot_longer(c(husker_score, opponent_score), names_to = "side", values_to = "score") |>
-  sonify_data(pitch = score, voice = side, instrument = c("xylophone", "cello"), bpm = 120)
+  sonify_data(pitch = score, voice = side, time = game_number,
+              instrument = c(husker_score = "xylophone", opponent_score = "cello"))
 ```
 
 - Stretch goal: `accent = win` (win/loss changes velocity or articulation), or `instrument = result` mapped per note.
@@ -110,7 +115,7 @@ luge_finals |>
 
 - **No `pitch` mapping.** Every note is the same pitch, or pitch is optional (`pitch = place` if wanted). So `pitch` **must be optional**, with a sensible default single note.
 - **`time =` in real seconds.** `time_scale = 1` means 1 data-second = 1 audio-second. `time_scale = 4` slows it down 4x so gaps of hundredths of a second are audible. This is different from `length =`, which stretches data to fit a duration. Both are needed.
-- **`sequence = event`** plays groups **one after another** with a pause between (`gap = 1` second). By contrast, `voice =` plays groups **at the same time**. Beginners need these two to be clearly different.
+- **`sequence = event`** plays groups **one after another** with a pause between (`gap = 1` second). By contrast, `voice =` only picks **which instrument** plays each note and never changes timing; to play columns **at the same time**, list them in `pitch = c(a, b)`. Beginners need these to be clearly different.
 - The **visual companion** matters: `autoplot()` for this should look like the NYT dot plot (one row per event, dots at seconds behind). Later, `sonify_video()` can animate a playhead across it.
 - Stretch: an accent or different note for the gold medalist (`accent = place == 1`).
 - **Dataset: `luge_finals`** (bundled). All five luge events at Milano Cortina 2026 (77 sleds). Men's doubles gold–silver was 0.068 s. Real time (`time_scale = 1`) runs 32.8 s; 4× slow motion runs 112 s.
@@ -153,7 +158,7 @@ sonify_data(
                            #   NULL = one fixed note (see §2.4, the NYT Olympic case)
   volume   = NULL,         # optional mapping → loudness (MIDI velocity)
   duration = NULL,         # optional mapping → note length
-  voice    = NULL,         # optional grouping → groups play AT THE SAME TIME (tracks/instruments)
+  voice    = NULL,         # optional grouping → picks the instrument per note (timing unchanged)
   sequence = NULL,         # optional grouping → groups play ONE AFTER ANOTHER
   gap      = 1,            # seconds of silence between sequence groups
   time     = NULL,         # optional mapping → onset; default = row order
@@ -372,9 +377,20 @@ Code lives in `R/`: `pitch.R`, `timing.R`, `instruments.R`, `sonify_data.R`, `wa
 - [ ] Remaining: test on Posit Cloud/Linux; per-instrument sensible default ranges (e.g., cello shouldn't play C6); maybe cache the rendered mp3 too.
 
 ### Phase 3 — Many rows, many voices (§2.2)
-- [ ] `voice =` and `group_by()` support; per-voice instruments; `volume =`, `duration =`.
-- [ ] `time =` mapping (dates/datetimes/numerics).
-- [ ] Bundle `ws_pitches`. Piano-roll `autoplot()`.
+- [x] **Voices (built 2026-09-24).** There are two routes, both approved by Matt:
+  - `pitch = c(husker_score, opponent_score)`: one note per column per row, at the same onset, on a **shared pitch scale** (equal values get equal notes across columns). Voice names come from the column labels; `c(home = a, away = b)` renames them. Matt prefers this because it's clear, not obfuscated.
+  - `voice = play_type`: picks the instrument per note and **never changes timing**. Voice order is factor levels or first appearance; NA becomes a "(missing)" voice.
+  - `instrument` takes one name (all voices), a vector in voice order, or a named vector. Voices left out of a named vector play the piano, with a message. Unknown names error with "did you mean". Using both routes at once is an error.
+  - The notes tibble gains a `voice` column; `settings$instruments` (named by voice) replaces `settings$instrument`; `settings$voices` and `settings$labels$voice` are added.
+  - Rendering: engine choice is per instrument. Built-in synth and real instruments in one piece render separately and mix (synth rendered at 44.1 kHz, stereo). The stand-in message lists every swap.
+  - MIDI: `assign_channels()` gives each channel a single program, with separate channels for same-key overlaps; at most 15 real instruments at once.
+  - Video: each voice gets its own color (Okabe-Ito palette, navy first, no red-orange near the playhead). Played dots fill with the voice color. There's a legend at top, flush-left (`legend.location = "plot"`). `point_color` accepts one color, one per voice in order, or named.
+  - 244 tests; full `R CMD check` is clean (0/0/0) including the vignette.
+- [x] ~~Drums/percussion~~ **dropped** (Matt, 2026-09-24): not worth it. The soundfont does have 11 drum kits in bank 128 if it's ever wanted.
+- [x] `time =` mapping (dates/datetimes/numerics). Done in Phase 1.
+- [ ] `duration =` mapping.
+- [ ] ~~Bundle `ws_pitches`~~ **No more bundled datasets** (Matt, 2026-09-24). Football play-by-play (run = tuba, completed pass = harp, …) will be Matt's own example in the blog post announcing the package.
+- [ ] Piano-roll `autoplot()` / the `plot =` route for `sonify_video()`.
 
 ### Phase 4 — Distributions (§2.3)
 - [ ] `sonify_histogram()` with `bins`, `binwidth`, and `weight`; count → volume/density.
@@ -409,3 +425,5 @@ Add an entry per work session: date, what was done, decisions made, and what's n
 - **2026-09-23 (later)** — Matt caught a bug in the README video: the highlight bar and playhead were on the mirror-image row (men's singles audio highlighted Team relay). Cause: the y axis used `scale_y_discrete(limits = rev(levels))`, but the highlight was placed at `match(event, levels)`, not the reversed order. My spot check used men's doubles, the middle row, which is symmetric, so it hid the bug. Fixed in `spike/05_readme_video.R` and verified with a frame from the middle of every event. **Lessons for `sonify_video()`:** derive every annotation's position from the same ordering the axis uses (better, map it through the data so ggplot places it), and have the tests check a frame from every group, including the first and last, not one sample.
 - **2026-09-23 (later)** — Matt's feature request: `sonify_video()` must accept ggplot2 themes (pre-built or custom), and the default must use `plot.title.position = "plot"` (a requirement for his students). Design recorded in the Phase 5 roadmap. The README video now uses flush-left titles.
 - **2026-09-23 (later)** — Built `sonify_video()` while Matt edited the vignette (I didn't touch `vignettes/`; commits stage files by name, never `git add -A`). 200 tests. `R CMD check` (vignettes skipped) is clean apart from the network-time NOTE. The README video (`spike/out/luge_readme.mp4`) is now made by `sonify_video()` itself. **Next:** the `plot =` argument; mention `sonify_video()` in the vignette/README once Matt's edits land.
+- **2026-09-24** — Pulled Matt's README edits. Built voices (Phase 3), both routes, with per-voice video colors. Decisions: no drums; no more bundled data (football is Matt's blog-post example); unlisted voices play the piano with a message. **Next:** `duration =`; the `plot =` route / piano-roll `autoplot()`; mention voices and `sonify_video()` in the vignette/README (Matt's call); Phase 4 distributions.
+- **2026-09-24 (later)** — Matt asked me to update the vignette myself (he'll edit later, building on it). Added "More than one voice" (two scores on a shared scale, citing the 58-56 Michigan State and 90-55 Oregon games; `voice = result` with W = marimba, L = cello, noting the redundant encoding), "Making a video" (`sonify_video()` examples with `eval = FALSE`, themes, flush-left titles), and two new exercises. The vignette renders to 3.3 MB with 11 players.

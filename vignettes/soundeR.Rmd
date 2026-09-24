@@ -210,6 +210,58 @@ rest are real instruments. You can also filter by family:
 instruments("chromatic percussion")
 ```
 
+## More than one voice
+
+So far every note has come from one instrument. There are two ways to use
+more.
+
+### Two columns at once
+
+List more than one column in `pitch` and each row plays one note per column
+at the same moment. Here Nebraska's score is the xylophone and the
+opponent's score is the cello:
+
+```{r}
+husker_games |>
+  sonify_data(c(husker_score, opponent_score), instrument = c("xylophone", "cello"), bpm = 150)
+```
+
+Both columns share one pitch scale, so 70 points is the same note whichever
+team scored it. That's what makes the comparison audible: in a close game,
+like the 58-56 win over Michigan State on Jan. 2, the two notes are nearly
+the same. In a blowout, like the 90-55 win over Oregon on Jan. 13, they're
+far apart.
+
+`notes()` shows which voice each note belongs to:
+
+```{r}
+husker_games |>
+  sonify_data(c(husker_score, opponent_score), instrument = c("xylophone", "cello")) |>
+  notes() |>
+  select(row, voice, onset, note, instrument, value)
+```
+
+### An instrument for each group
+
+To give each *kind* of row its own sound, map a column to `voice` and name
+an instrument for each group. Here wins are the marimba and losses the
+cello:
+
+```{r}
+husker_games |>
+  sonify_data(point_margin, voice = result,
+              instrument = c(W = "marimba", L = "cello"), bpm = 150)
+```
+
+`voice` only changes which instrument plays a note, not when it plays. The
+games still play in order. (Here the instrument repeats what pitch already
+says, since losses are the low notes anyway. Saying the same thing two ways
+can make a pattern easier to hear, just as color and position can double
+up in a chart.)
+
+If you leave a group out of the list, soundeR plays it on the piano and
+tells you which groups it filled in.
+
 ## Saving your sound
 
 `save_sound()` saves a sonification as a file. The ending of the file name
@@ -224,6 +276,48 @@ save_sound(season, "husker-season.wav") # uncompressed audio
 save_sound(season, "husker-season.mid") # to open in GarageBand or MuseScore
 ```
 
+## Making a video
+
+Audio players don't work everywhere. GitHub, most social media sites and
+some slide software won't play them. `sonify_video()` turns a sonification
+into an MP4 video: a chart of your data, with a playhead that moves across
+it and dots that fill in as each note plays.
+
+```{r, eval = FALSE}
+luge_finals |>
+  sonify_data(time = behind, time_scale = 1, sequence = event, instrument = "piano") |>
+  sonify_video(
+    "luge.mp4",
+    title = "Fractions of a second: luge at the 2026 Winter Olympics",
+    subtitle = "Each note is a sled crossing the finish line, in real time",
+    x_label = "Seconds behind the winner"
+  )
+```
+
+With `sequence`, each group gets its own row and the one that's playing is
+highlighted. Without it, the chart plots your `pitch` column against time.
+With more than one voice, each voice gets its own color.
+
+The chart is a ggplot, so you can change its look with any ggplot2 theme,
+the same way you would with a ggplot:
+
+```{r, eval = FALSE}
+husker_games |>
+  sonify_data(c(husker_score, opponent_score), instrument = c("xylophone", "cello")) |>
+  sonify_video(
+    "husker-scores.mp4",
+    title = "Nebraska vs. opponents, 2025-26",
+    x_label = "Game",
+    y_label = "Points",
+    theme = ggplot2::theme_classic(base_size = 16)
+  )
+```
+
+Titles line up with the left edge of the whole image, not the plot panel,
+even with a theme like `theme_classic()`. Making a video takes about as
+long as the sound itself: a 30-second sonification takes about 30 seconds
+to draw.
+
 ## Things to try
 
 * Which luge podium was closer, men's singles or women's singles? Listen
@@ -232,5 +326,9 @@ save_sound(season, "husker-season.mid") # to open in GarageBand or MuseScore
   plays the highest note. Does that make it easier to follow?
 * Play the Husker season sorted by `point_margin` with `arrange()`. What
   does the sound tell you now that it didn't before, and what did you lose?
+* Give each `location` (home, away and neutral) its own instrument with
+  `voice`. Can you hear whether Nebraska played differently on the road?
+* In the two-score version, try `scale = "chromatic"`. The notes clash
+  more. Does that make close games easier or harder to hear?
 * Pick a column from your own data. What should be high, what should be
   loud, and what should decide when a note plays?

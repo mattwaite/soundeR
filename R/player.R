@@ -30,16 +30,18 @@ player_tag <- function(x) {
 describe <- function(x) {
   n <- nrow(x$notes)
   secs <- x$settings$total
-  inst <- x$settings$instrument$name
+  insts <- unique(vapply(x$settings$instruments, `[[`, character(1), "name"))
   engine <- x$cache$engine
-  sound <- if (is.null(engine)) {
-    inst
-  } else if (engine$engine == "synth" && engine$voice != inst) {
-    paste0(inst, " (played by the built-in ", engine$voice, " sound)")
-  } else {
-    inst
-  }
-  sprintf("%d note%s \u00b7 %.1f seconds \u00b7 %s", n, if (n == 1) "" else "s", secs, sound)
+  sound <- vapply(insts, function(inst) {
+    ch <- engine[[inst]]
+    if (!is.null(ch) && ch$engine == "synth" && ch$voice != inst) {
+      paste0(inst, " (played by the built-in ", ch$voice, " sound)")
+    } else {
+      inst
+    }
+  }, character(1))
+  sprintf("%d note%s \u00b7 %.1f seconds \u00b7 %s", n, if (n == 1) "" else "s", secs,
+          paste(sound, collapse = " + "))
 }
 
 #' @export
@@ -88,8 +90,7 @@ save_sound <- function(x, path) {
     write_wav(get_audio(x), wav)
     av::av_audio_convert(wav, path, bit_rate = 192000, verbose = FALSE)
   } else if (ext == "mid") {
-    inst <- x$settings$instrument
-    write_midi(x$notes, path, program = if (inst$type == "gm") inst$program else 0L)
+    write_midi(x$notes, path, program = midi_programs(x))
   } else {
     cli::cli_abort(c(
       "I can't save {.file {path}}.",
@@ -98,4 +99,12 @@ save_sound <- function(x, path) {
   }
   cli::cli_alert_success("Saved {.file {path}}.")
   invisible(path)
+}
+
+# One General MIDI program per note; built-in synth sounds become piano.
+midi_programs <- function(x) {
+  by_name <- x$settings$instruments
+  names(by_name) <- vapply(by_name, `[[`, character(1), "name")
+  vapply(by_name[x$notes$instrument], function(i) if (i$type == "gm") i$program else 0L,
+         integer(1), USE.NAMES = FALSE)
 }

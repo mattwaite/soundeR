@@ -55,10 +55,11 @@ synth_voices <- list(
   pluck = voice_pluck
 )
 
+# `voice` is one synth voice for every note, or one per note.
 render_synth <- function(notes, voice, sr = synth_sr) {
-  play <- synth_voices[[voice]]
+  voice <- rep_len(voice, nrow(notes))
   sounds <- lapply(seq_len(nrow(notes)), function(i) {
-    play(notes$freq[i], notes$duration[i], sr) * (notes$velocity[i] / 127)
+    synth_voices[[voice[i]]](notes$freq[i], notes$duration[i], sr) * (notes$velocity[i] / 127)
   })
   starts <- floor(notes$onset * sr) + 1
   total <- max(starts + lengths(sounds)) + round(0.2 * sr)
