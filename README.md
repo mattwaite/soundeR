@@ -1,7 +1,3 @@
-
-
-https://github.com/user-attachments/assets/7cfc59a9-ab62-4300-aecd-be7b397e669b
-
 # soundeR
 
 Turn data into sound, the tidyverse way.
