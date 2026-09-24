@@ -55,4 +55,21 @@ the Viewer pane. In Quarto and R Markdown documents, the player appears
 on the page. `notes()` shows the note each row became, and
 `save_sound()` saves it as `.mp3`, `.wav` or `.mid`.
 
-See `vignette("soundeR")` for a full walkthrough.
+## Hearing a distribution
+
+`sonify_histogram()` is a histogram for your ears: it sweeps across the
+bins from low to high, and the more rows in a bin, the higher the note.
+`ne_house_years` counts Nebraska's single-family houses by the year they
+were built:
+
+```r
+ne_house_years |>
+  sonify_histogram(year_built, weight = houses, binwidth = 1, instrument = "marimba")
+```
+
+With one bin per year, you can hear old houses piling up on round-number
+years like 1900. With `binwidth = 10`, the
+spikes disappear and the shape of a century of building comes through.
+
+See `vignette("soundeR")` for a full walkthrough, and
+`vignette("distributions")` for more on distributions.

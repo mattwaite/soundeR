@@ -7,6 +7,8 @@
 #'
 #' The chart depends on how you made the sonification:
 #'
+#' * From [sonify_histogram()], a histogram whose bars fill in as the sweep
+#'   passes them.
 #' * With `sequence`, each group gets its own row, like the New York Times's
 #'   2010 Olympic Musical. The row that's playing is highlighted.
 #' * Without `sequence`, the chart plots `pitch` (up the side) against `time`
@@ -113,7 +115,18 @@ video_layout <- function(x) {
   voices <- x$settings$voices
   n$voice_key <- if (is.null(voices)) factor("all") else factor(n$voice, levels = voices)
   common <- list(voices = voices, legend_title = labels$voice)
-  if (!is.null(labels$sequence)) {
+  if (!is.null(x$settings$histogram)) {
+    h <- x$settings$histogram
+    # The playhead reaches each bar's left edge as its note starts, and the
+    # right edge of the last bar as the sweep ends.
+    last <- which.max(n$onset)
+    c(common, list(
+      type = "histogram", notes = n,
+      head_onset = c(n$onset, n$onset[last] + h$step),
+      head_x = c(n$bin_start, n$bin_end[last]),
+      x_label = labels$x, y_label = labels$pitch
+    ))
+  } else if (!is.null(labels$sequence)) {
     # Groups in the order they play.
     starts <- sort(tapply(n$onset, n$sequence, min))
     groups <- names(starts)
@@ -188,6 +201,19 @@ video_frame <- function(layout, t, style) {
                          fill = style$playhead_color) +
       ggplot2::scale_y_discrete(limits = rev(layout$groups)) +
       ggplot2::coord_cartesian(xlim = layout$x_range + c(-pad, pad)) +
+      ggplot2::labs(x = layout$x_label, y = layout$y_label)
+  } else if (layout$type == "histogram") {
+    # Bars not yet played are light gray, so the shape shows from the start.
+    n$fill <- ifelse(n$played, colors[as.character(n$voice_key)], "#e3e3e3")
+    head <- playhead_x(layout$head_onset, layout$head_x, t)
+    p <- ggplot2::ggplot(n) +
+      ggplot2::geom_rect(
+        ggplot2::aes(xmin = .data$bin_start, xmax = .data$bin_end, ymin = 0, ymax = .data$value,
+                     fill = .data$fill, colour = .data$voice_key),
+        linewidth = 0
+      ) +
+      ggplot2::geom_vline(xintercept = head, colour = style$playhead_color, linewidth = 0.9) +
+      ggplot2::scale_y_continuous(labels = scales::label_comma(), expand = ggplot2::expansion(mult = c(0, 0.05))) +
       ggplot2::labs(x = layout$x_label, y = layout$y_label)
   } else {
     head <- restore_x_class(playhead_x(n$onset, n$x, t), n$x)

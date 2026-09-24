@@ -25,3 +25,10 @@ test_that("the flagship examples run on the real data", {
   h <- sonify_data(husker_games, point_margin, instrument = "bell", bpm = 180)
   expect_equal(notes(h)$note[which.max(husker_games$point_margin)], "C6")
 })
+
+test_that("ne_house_years matches the source file", {
+  expect_equal(nrow(ne_house_years), 182)
+  expect_equal(sum(ne_house_years$houses), 515985)
+  expect_equal(range(ne_house_years$year_built), c(1800L, 2026L))
+  expect_false(anyDuplicated(ne_house_years$year_built) > 0)
+})
