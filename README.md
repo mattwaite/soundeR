@@ -48,6 +48,8 @@ husker_games |>
   sonify_data(point_margin, instrument = "xylophone", bpm = 180)
 ```
 
+https://github.com/user-attachments/assets/493f037d-24fc-4559-8428-435797e26fe8
+
 In RStudio or Positron, printing a sonification opens an audio player in
 the Viewer pane. In Quarto and R Markdown documents, the player appears
 on the page. `notes()` shows the note each row became, and
