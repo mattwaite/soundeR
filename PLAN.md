@@ -331,7 +331,7 @@ Check licensing/redistribution for each. Store build scripts in `data-raw/`.
 ## 9. Open decisions (resolve and record here)
 
 1. ~~**Function name `sonify()`.**~~ **DECIDED (2026-09-22): the main verb is `sonify_data()`.** This avoids masking CRAN's `sonify::sonify()`, is easier to search for, and gives a `sonify_` prefix family (`sonify_data()`, `sonify_histogram()`, `sonify_density()`) that shows up together with Tab completion, like stringr's `str_`.
-2. **Package name.** `soundeR`, `soundr`, and `sonifyr` were **all free on CRAN as of 2026-09-22** (checked). The GitHub repo is `mattwaite/soundeR` (private). Tidyverse style prefers lowercase (`soundr`?). Also check GitHub/R-universe collisions.
+2. **Package name.** `soundeR`, `soundr`, and `sonifyr` were **all free on CRAN as of 2026-09-22** (checked). The GitHub repo is `mattwaite/soundeR` (public since 2026-09-24). Tidyverse style prefers lowercase (`soundr`?). Also check GitHub/R-universe collisions.
 3. **Pitch as first positional mapping?** Should `sonify_data(home_score)` work without `pitch =`? This is the user's original example. **Yes: make `pitch` the 2nd positional argument, but optional** (the NYT Olympic case maps only `time`).
 3a. **`group_by()` meaning. DECIDED (Phase 1): no effect on sound.** Students' pipelines are almost always still grouped after `group_by() |> mutate()`, so any automatic meaning would fire accidentally. `voice =` / `sequence =` must be explicit, and grouped input gets a `cli` hint. Easy to revisit later (e.g., make grouping imply `sequence`).
 4. **WAV writing:** hand-rolled `writeBin` (zero deps) vs `tuneR` (a known quantity). **Decided: hand-rolled.** It worked in the Phase 0 spike: 20 lines, and `tuneR::readWave` reads it back. tuneR goes in Suggests for tests.
@@ -392,7 +392,7 @@ Code lives in `R/`: `pitch.R`, `timing.R`, `instruments.R`, `sonify_data.R`, `wa
 - [x] ~~Bundle `ws_pitches`~~ **Won't do: no more bundled datasets** (Matt, 2026-09-24). Football play-by-play (run = tuba, completed pass = harp, …) will be Matt's own example in the blog post announcing the package.
 - [ ] Piano-roll `autoplot()` / the `plot =` route for `sonify_video()`.
 
-### Phase 4 — Distributions (§2.3)
+### Phase 4 — Distributions (§2.3) — ON HOLD (Matt, 2026-09-24: rethinking this phase and its data)
 - [ ] `sonify_histogram()` with `bins`, `binwidth`, and `weight`; count → volume/density.
 - [ ] `sonify_density()` and a "Hearing distributions" vignette. **No bundled `ne_housing_age`** (no more bundled data): fetch ACS B25034 with tidycensus in the vignette (`eval = FALSE` or cached), or use a small made-up example.
 
@@ -428,3 +428,4 @@ Add an entry per work session: date, what was done, decisions made, and what's n
 - **2026-09-24** — Pulled Matt's README edits. Built voices (Phase 3), both routes, with per-voice video colors. Decisions: no drums; no more bundled data (football is Matt's blog-post example); unlisted voices play the piano with a message. **Next:** `duration =`; the `plot =` route / piano-roll `autoplot()`; mention voices and `sonify_video()` in the vignette/README (Matt's call); Phase 4 distributions.
 - **2026-09-24 (later)** — Matt asked me to update the vignette myself (he'll edit later, building on it). Added "More than one voice" (two scores on a shared scale, citing the 58-56 Michigan State and 90-55 Oregon games; `voice = result` with W = marimba, L = cello, noting the redundant encoding), "Making a video" (`sonify_video()` examples with `eval = FALSE`, themes, flush-left titles), and two new exercises. The vignette renders to 3.3 MB with 11 players.
 - **2026-09-24 (later)** — Cleaned up stale plan items: viewer check done, drums dropped, ws_pitches won't happen, and distributions won't bundle data (fetch with tidycensus or make up an example). Built `duration =` plus `duration_range`. Gotcha: my first "is it a typed number?" test treated `duration = len` (an R variable) as a column mapping; the rule is now "mentions no data column". 272 tests.
+- **2026-09-24 (later)** — Committed and pushed `duration`. Made the repo **public** at Matt's request (a friend is going to look), after a secret scan of the full history came back clean. **Phase 4 is on hold** while Matt thinks about the last phase and the data. Don't start `sonify_histogram()` without checking with him.
