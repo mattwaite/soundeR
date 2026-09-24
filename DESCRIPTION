@@ -33,6 +33,6 @@ Depends:
     R (>= 4.1.0)
 LazyData: true
 VignetteBuilder: knitr
-URL: https://mattwaite.github.io/soundeR/,
+URL: https://www.mattwaite.com/soundeR/,
     https://github.com/mattwaite/soundeR
 BugReports: https://github.com/mattwaite/soundeR/issues
