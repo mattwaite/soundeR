@@ -339,7 +339,7 @@ Check licensing/redistribution for each. Store build scripts in `data-raw/`.
 6. **Tempo vocabulary:** `bpm` vs `speed` vs `notes_per_second`. `bpm` is familiar from music. Should "beat" = one row always?
 7. **Composition model** (§4.5).
 9. **Histogram mapping. DECIDED (2026-09-24): count → pitch, bins → time.** §2.3 originally said pitch rises with bin position and count sets loudness. That spends pitch on what time already shows and puts magnitude on loudness, which people judge poorly. Standard audio graphs play x as time and y as pitch. Volume also follows count, redundantly. On the real data, the linear mapping gives 12 distinct notes at one bin per year (28% of bins on the lowest note, mostly the sparse 1800s), so linear is the default and `log = TRUE` is optional.
-8. **Default scale:** major pentatonic in C. Would minor pentatonic be moodier and better for "losses"? Maybe allow `mood = "happy"/"sad"` aliases. (Fun and teachable.)
+8. **Mood names. DECIDED (2026-09-24):** `scale = "happy"` (= pentatonic, the default) and `scale = "sad"` (= minor pentatonic) were added as scale names rather than a separate `mood` argument: one fewer argument, and "sad is a kind of scale" is itself the lesson. The original note: **Default scale:** major pentatonic in C. Would minor pentatonic be moodier and better for "losses"? Maybe allow `mood = "happy"/"sad"` aliases. (Fun and teachable.)
 
 ---
 

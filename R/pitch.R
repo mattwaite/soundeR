@@ -55,14 +55,18 @@ scales_list <- list(
   minor            = c(0, 2, 3, 5, 7, 8, 10),
   blues            = c(0, 3, 5, 6, 7, 10),
   chromatic        = 0:11,
-  none             = 0:11
+  none             = 0:11,
+  # Friendly names: a major pentatonic sounds bright, a minor one sad.
+  happy            = c(0, 2, 4, 7, 9),
+  sad              = c(0, 3, 5, 7, 10)
 )
 
 #' Musical scales available for pitch mapping
 #'
 #' @return A character vector of scale names to use with the `scale` argument
 #'   of [sonify_data()]. `"none"` skips snapping, so pitches follow the data
-#'   exactly.
+#'   exactly. `"happy"` and `"sad"` are friendly names for `"pentatonic"`
+#'   (the default) and `"minor_pentatonic"`.
 #' @export
 #' @examples
 #' sound_scales()

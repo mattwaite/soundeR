@@ -9,7 +9,8 @@ sound_scales()
 \value{
 A character vector of scale names to use with the \code{scale} argument
 of \code{\link[=sonify_data]{sonify_data()}}. \code{"none"} skips snapping, so pitches follow the data
-exactly.
+exactly. \code{"happy"} and \code{"sad"} are friendly names for \code{"pentatonic"}
+(the default) and \code{"minor_pentatonic"}.
 }
 \description{
 Musical scales available for pitch mapping

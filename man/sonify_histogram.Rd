@@ -47,7 +47,8 @@ Voices you leave out play the piano.}
 spreads out the notes when a few bins are much bigger than the rest.}
 
 \item{scale}{The musical scale that pitches snap to. See \code{\link[=sound_scales]{sound_scales()}}.
-The default, \code{"pentatonic"}, sounds pleasant with any data. With
+The default, \code{"pentatonic"}, sounds pleasant with any data. \code{"happy"} is
+another name for it, and \code{"sad"} switches to a minor pentatonic. With
 \code{"none"}, the built-in synth plays exact frequencies, but real
 instruments play the nearest semitone.}
 

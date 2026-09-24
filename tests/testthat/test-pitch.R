@@ -57,3 +57,15 @@ test_that("volume maps to MIDI velocity", {
   expect_equal(map_volume(c(3, 3)), c(100L, 100L))
   expect_equal(map_volume(c("lo", "hi")), c(50L, 120L)[c(2, 1)])
 })
+
+test_that("happy and sad are friendly scale names", {
+  expect_true(all(c("happy", "sad") %in% sound_scales()))
+  expect_equal(scales_list$happy, scales_list$pentatonic)
+  expect_equal(scales_list$sad, scales_list$minor_pentatonic)
+  d <- data.frame(x = 1:12)
+  happy <- notes(sonify_data(d, x, scale = "happy", instrument = "sine"))$midi
+  sad <- notes(sonify_data(d, x, scale = "sad", instrument = "sine"))$midi
+  expect_equal(happy, notes(sonify_data(d, x, instrument = "sine"))$midi)
+  expect_true(all((sad %% 12) %in% c(0, 3, 5, 7, 10)))
+  expect_true(any(sad != happy))
+})

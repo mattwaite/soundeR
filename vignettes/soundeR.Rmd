@@ -168,6 +168,15 @@ husker_games |>
   sonify_data(point_margin, instrument = "xylophone", bpm = 180, scale = "none")
 ```
 
+The scale sets the mood, too. `scale = "sad"` plays the same shape
+in a minor key, and suddenly a 28-win season sounds like a lament. (The
+default is `scale = "happy"`.)
+
+```{r}
+husker_games |>
+  sonify_data(point_margin, instrument = "xylophone", bpm = 180, scale = "sad")
+```
+
 Narrow the `range` of notes and a dominant season sounds a lot more
 ordinary:
 

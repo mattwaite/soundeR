@@ -63,7 +63,8 @@ and durations, days for dates). Plays \code{time} in real time.}
 \item{gap}{Seconds of silence between \code{sequence} groups.}
 
 \item{scale}{The musical scale that pitches snap to. See \code{\link[=sound_scales]{sound_scales()}}.
-The default, \code{"pentatonic"}, sounds pleasant with any data. With
+The default, \code{"pentatonic"}, sounds pleasant with any data. \code{"happy"} is
+another name for it, and \code{"sad"} switches to a minor pentatonic. With
 \code{"none"}, the built-in synth plays exact frequencies, but real
 instruments play the nearest semitone.}
 

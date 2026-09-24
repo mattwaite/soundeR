@@ -63,7 +63,8 @@
 #'   and durations, days for dates). Plays `time` in real time.
 #' @param gap Seconds of silence between `sequence` groups.
 #' @param scale The musical scale that pitches snap to. See [sound_scales()].
-#'   The default, `"pentatonic"`, sounds pleasant with any data. With
+#'   The default, `"pentatonic"`, sounds pleasant with any data. `"happy"` is
+#'   another name for it, and `"sad"` switches to a minor pentatonic. With
 #'   `"none"`, the built-in synth plays exact frequencies, but real
 #'   instruments play the nearest semitone.
 #' @param key The key of the scale, like `"C"`, `"G"` or `"Bb"`.
