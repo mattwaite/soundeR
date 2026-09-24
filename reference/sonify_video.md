@@ -1,8 +1,8 @@
 # Save a sonification as a video with a moving chart
 
 `sonify_video()` makes an MP4 video of your sonification: a chart of the
-data, with a playhead that moves across it and dots that fill in as each
-note plays, and the sound as the soundtrack. Videos are handy where
+data, with a playhead that moves across it and marks that fill in as
+each note plays, and the sound as the soundtrack. Videos are handy where
 audio players aren't allowed, like a GitHub README, social media or
 slides.
 
@@ -12,6 +12,7 @@ slides.
 sonify_video(
   x,
   path,
+  plot = NULL,
   title = NULL,
   subtitle = NULL,
   caption = NULL,
@@ -33,11 +34,20 @@ sonify_video(
 - x:
 
   A sonification made by
-  [`sonify_data()`](https://www.mattwaite.com/soundeR/reference/sonify_data.md).
+  [`sonify_data()`](https://www.mattwaite.com/soundeR/reference/sonify_data.md),
+  [`sonify_histogram()`](https://www.mattwaite.com/soundeR/reference/sonify_histogram.md)
+  or
+  [`sonify_density()`](https://www.mattwaite.com/soundeR/reference/sonify_density.md).
 
 - path:
 
   Where to save the video. Must end in `.mp4`.
+
+- plot:
+
+  Optional. A chart made with
+  [`sonify_plot()`](https://www.mattwaite.com/soundeR/reference/sonify_plot.md)
+  from this same sonification, customized however you like.
 
 - title, subtitle, caption:
 
@@ -49,7 +59,11 @@ sonify_video(
 
 - theme:
 
-  Optional. A ggplot2 theme to change how the chart looks.
+  Optional. A ggplot2 theme, complete (like
+  [`ggplot2::theme_classic()`](https://ggplot2.tidyverse.org/reference/ggtheme.html))
+  or partial (like
+  `ggplot2::theme(plot.title = ggplot2::element_text(size = 24))`). It's
+  added last, so it overrides soundeR's defaults.
 
 - title_position:
 
@@ -58,9 +72,9 @@ sonify_video(
 
 - point_color:
 
-  Color for the dots. With more than one voice, one color per voice, in
-  order or named by voice; by default each voice gets its own color from
-  a colorblind-friendly palette.
+  Color for the dots (or bars, or curve). With more than one voice, one
+  color per voice, in order or named by voice; by default each voice
+  gets its own color from a colorblind-friendly palette.
 
 - playhead_color, highlight_color:
 
@@ -81,32 +95,12 @@ sonify_video(
 
 ## Details
 
-The chart depends on how you made the sonification:
-
-- From
-  [`sonify_histogram()`](https://www.mattwaite.com/soundeR/reference/sonify_histogram.md),
-  a histogram whose bars fill in as the sweep passes them. From
-  [`sonify_density()`](https://www.mattwaite.com/soundeR/reference/sonify_density.md),
-  a curve that fills in the same way.
-
-- With `sequence`, each group gets its own row, like the New York
-  Times's 2010 Olympic Musical. The row that's playing is highlighted.
-
-- Without `sequence`, the chart plots `pitch` (up the side) against
-  `time` or row order (along the bottom).
-
-### Changing the look
-
-`theme` accepts any ggplot2 theme, just like adding one to a ggplot: a
-complete theme such as
-[`ggplot2::theme_classic()`](https://ggplot2.tidyverse.org/reference/ggtheme.html),
-or a few changes such as
-`ggplot2::theme(plot.title = ggplot2::element_text(size = 24))`. It's
-added last, so it overrides soundeR's defaults.
-
-Titles and captions line up with the edge of the whole image, not the
-plot panel (`plot.title.position = "plot"`), even with a complete theme.
-Use `title_position = "panel"` for ggplot2's default.
+The chart is the one
+[`sonify_plot()`](https://www.mattwaite.com/soundeR/reference/sonify_plot.md)
+draws. To change more than the title, labels and theme, build it
+yourself with
+[`sonify_plot()`](https://www.mattwaite.com/soundeR/reference/sonify_plot.md),
+add to it like any ggplot, and pass it in with `plot =`.
 
 ## Examples
 

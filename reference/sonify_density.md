@@ -21,7 +21,7 @@ sonify_density(
   points = 120,
   scale = "pentatonic",
   key = "C",
-  range = c("C3", "C6"),
+  range = NULL,
   pan = FALSE,
   engine = c("auto", "synth", "fluidsynth")
 )
@@ -76,7 +76,10 @@ sonify_density(
 
 - range:
 
-  The lowest and highest notes to use, like `c("C3", "C6")`.
+  The lowest and highest notes to use, like `c("C3", "C6")`. By default,
+  the usual range of the instrument (see
+  [`instruments()`](https://www.mattwaite.com/soundeR/reference/instruments.md)),
+  or the range several instruments share. Built-in sounds use C3 to C6.
 
 - pan:
 

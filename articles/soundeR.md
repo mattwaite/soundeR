@@ -282,39 +282,41 @@ lists everything you can use:
 ``` r
 
 instruments()
-#> # A tibble: 133 × 4
-#>    name                  family engine     program
-#>    <chr>                 <chr>  <chr>        <int>
-#>  1 sine                  synth  synth           NA
-#>  2 triangle              synth  synth           NA
-#>  3 square                synth  synth           NA
-#>  4 bell                  synth  synth           NA
-#>  5 pluck                 synth  synth           NA
-#>  6 acoustic grand piano  piano  fluidsynth       0
-#>  7 bright acoustic piano piano  fluidsynth       1
-#>  8 electric grand piano  piano  fluidsynth       2
-#>  9 honky-tonk piano      piano  fluidsynth       3
-#> 10 electric piano 1      piano  fluidsynth       4
+#> # A tibble: 133 × 6
+#>    name                  family engine     program low   high 
+#>    <chr>                 <chr>  <chr>        <int> <chr> <chr>
+#>  1 sine                  synth  synth           NA C3    C6   
+#>  2 triangle              synth  synth           NA C3    C6   
+#>  3 square                synth  synth           NA C3    C6   
+#>  4 bell                  synth  synth           NA C3    C6   
+#>  5 pluck                 synth  synth           NA C3    C6   
+#>  6 acoustic grand piano  piano  fluidsynth       0 C3    C6   
+#>  7 bright acoustic piano piano  fluidsynth       1 C3    C6   
+#>  8 electric grand piano  piano  fluidsynth       2 C3    C6   
+#>  9 honky-tonk piano      piano  fluidsynth       3 C3    C6   
+#> 10 electric piano 1      piano  fluidsynth       4 C3    C6   
 #> # ℹ 123 more rows
 ```
 
 The first five are soundeR’s built-in sounds, which work everywhere. The
-rest are real instruments. You can also filter by family:
+rest are real instruments. `low` and `high` show each one’s usual range:
+unless you set `range` yourself, notes stay inside it, so a tuba plays
+low and a piccolo plays high. You can also filter by family:
 
 ``` r
 
 instruments("chromatic percussion")
-#> # A tibble: 8 × 4
-#>   name          family               engine     program
-#>   <chr>         <chr>                <chr>        <int>
-#> 1 celesta       chromatic percussion fluidsynth       8
-#> 2 glockenspiel  chromatic percussion fluidsynth       9
-#> 3 music box     chromatic percussion fluidsynth      10
-#> 4 vibraphone    chromatic percussion fluidsynth      11
-#> 5 marimba       chromatic percussion fluidsynth      12
-#> 6 xylophone     chromatic percussion fluidsynth      13
-#> 7 tubular bells chromatic percussion fluidsynth      14
-#> 8 dulcimer      chromatic percussion fluidsynth      15
+#> # A tibble: 8 × 6
+#>   name          family               engine     program low   high 
+#>   <chr>         <chr>                <chr>        <int> <chr> <chr>
+#> 1 celesta       chromatic percussion fluidsynth       8 C4    C7   
+#> 2 glockenspiel  chromatic percussion fluidsynth       9 C5    C8   
+#> 3 music box     chromatic percussion fluidsynth      10 C4    C7   
+#> 4 vibraphone    chromatic percussion fluidsynth      11 F3    F6   
+#> 5 marimba       chromatic percussion fluidsynth      12 C3    C6   
+#> 6 xylophone     chromatic percussion fluidsynth      13 C4    C7   
+#> 7 tubular bells chromatic percussion fluidsynth      14 C4    G5   
+#> 8 dulcimer      chromatic percussion fluidsynth      15 C3    C6
 ```
 
 ## More than one voice
@@ -325,13 +327,13 @@ use more.
 ### Two columns at once
 
 List more than one column in `pitch` and each row plays one note per
-column at the same moment. Here Nebraska’s score is the xylophone and
-the opponent’s score is the cello:
+column at the same moment. Here Nebraska’s score is the marimba and the
+opponent’s score is the cello:
 
 ``` r
 
 husker_games |>
-  sonify_data(c(husker_score, opponent_score), instrument = c("xylophone", "cello"), bpm = 150)
+  sonify_data(c(husker_score, opponent_score), instrument = c("marimba", "cello"), bpm = 150)
 ```
 
 Both columns share one pitch scale, so 70 points is the same note
@@ -355,22 +357,22 @@ which voice each note belongs to:
 ``` r
 
 husker_games |>
-  sonify_data(c(husker_score, opponent_score), instrument = c("xylophone", "cello")) |>
+  sonify_data(c(husker_score, opponent_score), instrument = c("marimba", "cello")) |>
   notes() |>
   select(row, voice, onset, note, pan, instrument, value)
 #> # A tibble: 70 × 7
 #>      row voice          onset note    pan instrument value
 #>    <int> <chr>          <dbl> <chr> <dbl> <chr>      <int>
-#>  1     1 husker_score     0   C5     -0.6 xylophone     86
-#>  2     1 opponent_score   0   E3      0.6 cello         53
-#>  3     2 husker_score     0.5 G5     -0.6 xylophone     96
-#>  4     2 opponent_score   0.5 C4      0.6 cello         66
-#>  5     3 husker_score     1   D4     -0.6 xylophone     69
+#>  1     1 husker_score     0   E4     -0.6 marimba       86
+#>  2     1 opponent_score   0   D3      0.6 cello         53
+#>  3     2 husker_score     0.5 A4     -0.6 marimba       96
+#>  4     2 opponent_score   0.5 G3      0.6 cello         66
+#>  5     3 husker_score     1   A3     -0.6 marimba       69
 #>  6     3 opponent_score   1   D3      0.6 cello         50
-#>  7     4 husker_score     1.5 C6     -0.6 xylophone    105
-#>  8     4 opponent_score   1.5 A5      0.6 cello         99
-#>  9     5 husker_score     2   C5     -0.6 xylophone     84
-#> 10     5 opponent_score   2   E4      0.6 cello         72
+#>  7     4 husker_score     1.5 C5     -0.6 marimba      105
+#>  8     4 opponent_score   1.5 A4      0.6 cello         99
+#>  9     5 husker_score     2   E4     -0.6 marimba       84
+#> 10     5 opponent_score   2   A3      0.6 cello         72
 #> # ℹ 60 more rows
 ```
 
@@ -442,7 +444,7 @@ theme, the same way you would with a ggplot:
 ``` r
 
 husker_games |>
-  sonify_data(c(husker_score, opponent_score), instrument = c("xylophone", "cello")) |>
+  sonify_data(c(husker_score, opponent_score), instrument = c("marimba", "cello")) |>
   sonify_video(
     "husker-scores.mp4",
     title = "Nebraska vs. opponents, 2025-26",
@@ -456,6 +458,34 @@ Titles line up with the left edge of the whole image, not the plot
 panel, even with a theme like `theme_classic()`. Making a video takes
 about as long as the sound itself: a 30-second sonification takes about
 30 seconds to draw.
+
+To change more than the title, labels and theme, draw the chart yourself
+with
+[`sonify_plot()`](https://www.mattwaite.com/soundeR/reference/sonify_plot.md).
+It returns an ordinary ggplot, with every note played, so you can add
+scales, annotations or anything else. Then hand it to
+[`sonify_video()`](https://www.mattwaite.com/soundeR/reference/sonify_video.md)
+with `plot =`, and the video adds the moving playhead on top:
+
+``` r
+
+race <- luge_finals |>
+  sonify_data(time = behind, time_scale = 1, sequence = event, instrument = "piano")
+
+p <- sonify_plot(race) +
+  ggplot2::labs(title = "Fractions of a second", x = NULL) +
+  ggplot2::scale_x_continuous(
+    breaks = 0:8,
+    labels = function(s) ifelse(s == 0, "Winner", paste0("+", s, " s"))
+  ) +
+  ggplot2::annotate("text", x = 1.9, y = "Men's doubles",
+                    label = "0.068 s between gold and silver", hjust = 0, vjust = -1.2)
+
+sonify_video(race, "luge.mp4", plot = p)
+```
+
+[`sonify_plot()`](https://www.mattwaite.com/soundeR/reference/sonify_plot.md)
+on its own is handy too, for a picture of your sonification in a report.
 
 ## Things to try
 

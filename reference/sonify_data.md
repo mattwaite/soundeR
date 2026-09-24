@@ -23,7 +23,7 @@ sonify_data(
   gap = 1,
   scale = "pentatonic",
   key = "C",
-  range = c("C3", "C6"),
+  range = NULL,
   duration_range = c(0.1, 1.5),
   reverse = FALSE,
   engine = c("auto", "synth", "fluidsynth"),
@@ -117,7 +117,10 @@ sonify_data(
 
 - range:
 
-  The lowest and highest notes to use, like `c("C3", "C6")`.
+  The lowest and highest notes to use, like `c("C3", "C6")`. By default,
+  the usual range of the instrument (see
+  [`instruments()`](https://www.mattwaite.com/soundeR/reference/instruments.md)),
+  or the range several instruments share. Built-in sounds use C3 to C6.
 
 - duration_range:
 

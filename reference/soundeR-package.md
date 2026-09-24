@@ -7,7 +7,7 @@ map columns to pitch, time and loudness and hear the result.
 
 Useful links:
 
-- <https://mattwaite.github.io/soundeR/>
+- <https://www.mattwaite.com/soundeR/>
 
 - <https://github.com/mattwaite/soundeR>
 

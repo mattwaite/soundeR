@@ -31,5 +31,5 @@ save_sound(x, path)
 s <- sonify_data(data.frame(x = c(1, 5, 3)), x, instrument = "bell")
 path <- tempfile(fileext = ".wav")
 save_sound(s, path)
-#> ✔ Saved /tmp/Rtmp8fgb9q/file1fdf4bfd2592.wav.
+#> ✔ Saved /tmp/RtmpPdRcIy/file202d44ca7078.wav.
 ```

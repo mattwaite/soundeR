@@ -13,6 +13,8 @@ Turn a data frame into a sonification. Print the result to hear it.
 
 ## See, save and inspect
 
+- [`sonify_plot()`](https://www.mattwaite.com/soundeR/reference/sonify_plot.md)
+  : Draw a sonification as a chart
 - [`sonify_video()`](https://www.mattwaite.com/soundeR/reference/sonify_video.md)
   : Save a sonification as a video with a moving chart
 - [`save_sound()`](https://www.mattwaite.com/soundeR/reference/save_sound.md)

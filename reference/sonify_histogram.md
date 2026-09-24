@@ -22,7 +22,7 @@ sonify_histogram(
   pan = FALSE,
   scale = "pentatonic",
   key = "C",
-  range = c("C3", "C6"),
+  range = NULL,
   engine = c("auto", "synth", "fluidsynth"),
   force = FALSE
 )
@@ -94,7 +94,10 @@ sonify_histogram(
 
 - range:
 
-  The lowest and highest notes to use, like `c("C3", "C6")`.
+  The lowest and highest notes to use, like `c("C3", "C6")`. By default,
+  the usual range of the instrument (see
+  [`instruments()`](https://www.mattwaite.com/soundeR/reference/instruments.md)),
+  or the range several instruments share. Built-in sounds use C3 to C6.
 
 - engine:
 

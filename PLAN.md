@@ -701,9 +701,20 @@ fluidsynth engine,
 mid/mp3,
 [`sound_setup()`](https://www.mattwaite.com/soundeR/reference/sound_setup.md)).
 
-Remaining: test on Posit Cloud/Linux; per-instrument sensible default
-ranges (e.g., cello shouldn’t play C6); maybe cache the rendered mp3
-too.
+**Per-instrument default ranges (built 2026-09-24).** `range = NULL` by
+default: one real instrument uses its usual range (rounded orchestral
+ranges, trimmed to about 2.5–3 octaves; family defaults plus overrides
+in `R/instruments.R`, e.g. cello C2–C5, tuba D1–D4, piccolo D5–C8).
+Several share the overlap if it’s at least 18 semitones; otherwise
+C3–C6, with a rate-limited message. Built-in sounds use C3–C6 and don’t
+narrow the overlap. A range you set yourself always wins.
+[`instruments()`](https://www.mattwaite.com/soundeR/reference/instruments.md)
+gains `low`/`high`. The vignette’s two-score example switched from
+xylophone + cello (little overlap, so it would print the message) to
+marimba + cello (C3–C5).
+
+Remaining: Posit Cloud (the GitHub Actions Linux build already works);
+maybe cache the rendered mp3 too.
 
 ### Phase 3 — Many rows, many voices (§2.2)
 
@@ -756,8 +767,23 @@ cello note is still sounding at 0.9 s, a 0.2 s one isn’t.
 2026-09-24). Football play-by-play (run = tuba, completed pass = harp,
 …) will be Matt’s own example in the blog post announcing the package.
 
-Piano-roll `autoplot()` / the `plot =` route for
-[`sonify_video()`](https://www.mattwaite.com/soundeR/reference/sonify_video.md).
+**[`sonify_plot()`](https://www.mattwaite.com/soundeR/reference/sonify_plot.md)
+and `sonify_video(plot =)` (built 2026-09-24).** `sonify_plot(x)`
+returns the finished chart (every note played) as a normal ggplot,
+tagged with `attr(p, "soundeR_layout")` and `"soundeR_colors"` (custom
+attributes survive `+` in ggplot2 4.0). Video frames = that plot +
+`add_frame_layers()`: hollow dots / gray bars / gray curve over the
+notes still to play, the highlight band inserted at the **bottom** of
+`p$layers`, and the playhead on top, so user additions (scales,
+annotations, themes) stay put. `sonify_video(plot = p)` checks the plot
+came from
+[`sonify_plot()`](https://www.mattwaite.com/soundeR/reference/sonify_plot.md)
+of the same sonification (onsets match); `point_color` with `plot`
+warns; title/label/theme args still apply on top; title position is
+enforced. Caveat, documented: adding a complete theme to a *static*
+[`sonify_plot()`](https://www.mattwaite.com/soundeR/reference/sonify_plot.md)
+with `+` resets ggplot’s title position, like any ggplot. Replaces the
+old “piano-roll `autoplot()`” idea. 20 new/updated tests.
 
 ### Phase 4 — Distributions (§2.3) — resumed 2026-09-24 with Matt’s data
 
@@ -1114,3 +1140,7 @@ what’s next.
   also the first proof that fluidsynth and the soundfont download work
   on Linux. On the live site, all players play with real instruments (no
   stand-in messages) and both README videos play.
+- **2026-09-24 (later)** — Matt: the package name stays soundeR. Built
+  per-instrument default ranges and
+  [`sonify_plot()`](https://www.mattwaite.com/soundeR/reference/sonify_plot.md)
+  / `sonify_video(plot =)`. 466 tests.
